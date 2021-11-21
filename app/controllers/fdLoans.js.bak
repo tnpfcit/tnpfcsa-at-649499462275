@@ -1,0 +1,33 @@
+const db = require('../config/db.js');
+const Sequelize = require('sequelize');
+const sequelize = require('sequelize');
+
+
+exports.findAll= (req, res) =>{ 
+	var customerId = req.body.customerId;
+  if(customerId){
+	db.sequelize.query('select customerId,customerName from api_customerdetails  WHERE customerId =:customerId',
+   { replacements: {customerId: customerId }, type: sequelize.QueryTypes.SELECT }).then(results =>{
+     var array = results;
+    db.sequelize.query('select depositAccountNumber AS "depositAccountNumber",loanAccountNumber AS "loanAccountNumber",depositAmount AS "depositAmount",loanAvialedAmount AS "loanAvialedAmount",loanEligibleAmount AS "loanEligibleAmount",loanOpenDate AS "loanOpenDate",loanClosureDueDate AS "loanClosureDueDate",loanInterestRate AS "loanInterestRate",loanInterestDue AS "loanInterestDue",loanAccountStatus AS "loanAccountStatus",loaninterestCollected AS "loaninterestCollected",productDesc AS "productDesc" from api_loans WHERE customerId =:customerId',
+          { replacements: {customerId: customerId }, type: sequelize.QueryTypes.SELECT }).then(results =>{
+            if(results.length>0)
+            {
+                  return res.status(200).send({"message": "ok","responseCode":"200","customerId":array[0].CUSTOMERID,"customerName":array[0].CUSTOMERNAME,"response":results});
+            }
+            else
+            {
+              res.send({"responseCode":"404","message": "customer details not found "});
+            }
+		});
+}).catch(err => {
+        res.status(500).send({
+            message: err.message
+        });
+    });
+  }
+  else{
+    res.send({"responseCode":"401","message": "Invalid input parameters. Please check the key value pair in the request body."});
+  }
+};
+

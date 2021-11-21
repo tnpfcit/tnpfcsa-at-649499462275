@@ -1,0 +1,15 @@
+{
+    "tenant": "tnpowerfinance.onmicrosoft.com",
+    "authorityHostUrl": "https://login.microsoftonline.com/common",
+    "clientId": "0002beae-684f-4621-bf3b-48aefde6ce91",    
+    "resource":"https://graph.windows.net",
+
+    "port":3001,
+    "host":"localhost",
+	"responseMessage":" Bad request check request payload/parameters",
+    "dbsUrl":"http://13.234.49.172:8100/dms/getSignedURL",
+    "docType":"paymentAdvice",
+    "logoName":"logo_powerFin.png",
+    "quattrocentoSansRegular" : "QuattrocentoSans-Regular.ttf",
+    "quattrocentoSansBold":"QuattrocentoSans-Bold.ttf"
+}

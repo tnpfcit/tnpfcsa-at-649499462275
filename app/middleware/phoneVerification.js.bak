@@ -1,0 +1,21 @@
+var http = require('http');
+var urlencode = require('urlencode');
+var request = require('request');
+
+
+function phoneVerificationMessage (phNumber,otpNumber) { 
+    
+    
+                var msg = urlencode('Dear Depositor, '+otpNumber+' is the OTP for your mobile number registration at TNPFCL. Please do not disclose it to anyone and its validity expires in 5 minutes.');
+                var toNumber = phNumber;
+                var username = 'Pallavim@amiainfotech.com';
+                var hash = '8537c38575a09969ff49dee3cabfe46dcc070db98b86bae94f9996e138b096b5';
+                var sender = 'TNPFCL';
+                var data = 'username=' + username + '&hash=' + hash + '&sender=' + sender + '&numbers=' + toNumber + '&message=' + msg;
+
+                request.get("http://api.textlocal.in/send?"+ data, (error, response, body) => {
+                //console.log(response.body);
+                })
+        }                
+
+module.exports = phoneVerificationMessage;
