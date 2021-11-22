@@ -25,12 +25,10 @@ exports.chequeInformation = (req,res) => {
     `);
 
     if(panNumber && chequeNumber && bankId){
-
-        var query = 'select * from customer where pan_number =:panNumber';
+        var query = 'select * from customer where NVL(pan_number,TAN_NO) =:panNumber';
         db.sequelize.query(query,{replacements:{panNumber:panNumber},type: sequelize.QueryTypes.SELECT}
         ).then(results =>{
                 if(results.length > 0){
-
                     var query = 'select a.cheque_num AS "chequeNumber", nvl(to_char(cheque_cleared_dt,\'dd-mm-yyyy\'),\'-\') as "clearanceDate",\
                     case when cheque_status = \'F\' then \'Returned/Rejected\' when cheque_status is null then \'Awaiting Clearance Status\'\
                     else \'Cleared\' END as "paymentStatus", nvl(b.bouncing_reason,\'-\') as "rejectReason", nvl(c.deposit_no,\'NA\') as "depositNumber",\
@@ -41,7 +39,6 @@ exports.chequeInformation = (req,res) => {
                     left join deposit_acinfo c on A.ACKNWLDGE_ID = C.ACKNWLDGE_ID and c.status !=\'DELETED\'\
                     left join customer_doc_Details e on c.deposit_no = e.cust_id and doc_type = \'fdCertificate\'\
                     WHERE D.PAN_NO =:panNumber AND A.CHEQUE_NUM =:chequeNumber and drawn_on_bank =:bankId';
-                    
                     db.sequelize.query(query,{replacements:{panNumber:panNumber,chequeNumber:chequeNumber,bankId:bankId},type: sequelize.QueryTypes.SELECT}
                     ).then(results =>{
                         console.log(results);
@@ -59,7 +56,7 @@ exports.chequeInformation = (req,res) => {
 
                     }).catch(err => {
 
-                        logger.error("selecting record query error========="+err);
+                        logger.error("selecting record query error==="+err);
                         return res.status(500).send({
                                 data:null,
                                 message:err.message
@@ -87,5 +84,4 @@ exports.chequeInformation = (req,res) => {
             "response":responseMessage
         });
     }
-
 }

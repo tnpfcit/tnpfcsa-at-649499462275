@@ -1,27 +1,45 @@
 const db = require('../config/db.js');
 const sequelize = require('sequelize');
-//const deptvalidation = require('../middleware/depositbankvalidation.js');
+var logger = require('../config/logger');
 var deposit_bank_creation = db.depositbankcreation;
-//const { validationResult } = require('express-validator');
-
+var {responseMessage,sucessCode,resourceNotFoundcode,badRequestcode} = require('../config/env');
 
 exports.depositbank = (req,res) =>{
+var {
+    
+    depositNumber,
+    bankAccountNumber,
+    bankCode,
+    bankName,
+    branchName,
+    accHolderName,
+    ifscCode,
+    micrCode
 
-   // const errors = validationResult(req);
-    //deptvalidation.validates('deposit');
-    //if (!errors.isEmpty()) {res.status(200).json({"message":"ok", "responseCode":"405",errors: errors.array()});return;}
+} = req.body;
 
-    var {depositNumber,bankAccountNumber,bankCode,bankName,branchName,accHolderName,ifscCode,micrCode} = req.body;
-    //console.log(depositNumber);
+logger.info(`
+    ${new Date()} || 
+    ${req.originalUrl} || 
+    ${JSON.stringify(req.body)} || 
+    ${req.ip} || 
+    ${req.protocol} || 
+    ${req.method}
+`);
+    
+deposit_bank_creation.findAll({where:{ACCOUNT_NO: bankAccountNumber}}
+    ).then(results=>{
+        
+        if(results.length>0){
+            
+            return res.status(200).send({
+                "responseCode":sucessCode,
+                "response":"AccountNumber already exists"
+            });
 
-    deposit_bank_creation.findAll({where:{ACCOUNT_NO: bankAccountNumber}}).then(results=>{
-        if(results.length>0)
-        {
-            return res.status(200).send({"message":"ok","responseCode":"200","response":"accountNumber already exists"});
-        }
-        else
-        {
-                deposit_bank_creation.build({ 
+        } else {
+            
+            deposit_bank_creation.build({ 
                 DEPOSIT_NO: depositNumber, 
                 ACCOUNT_NO:bankAccountNumber,
                 BANK_CODE:bankCode,
@@ -33,13 +51,22 @@ exports.depositbank = (req,res) =>{
                 NEFT_ECS:'N',
                 STATUS:"CREATED",
                 STATUS_BY:"SYSUSER",
-                STATUS_DT:new Date(),
-                 }).save().then(results => {
-                  //console.log(results);
-                  return res.status(200).send({"message":"ok","responseCode":"200","response":"data saved sucessfully"})
-                 }).catch(err => {res.status(200).send({message: err.message});});
-
+                STATUS_DT:new Date()}
+            ).save().then(results => {
+                    return res.status(200).send({
+                        "responseCode":sucessCode,
+                        "response":"data saved sucessfully"
+                    });
+            }).catch(err => {
+                res.status(500).send({
+                    data:null, message: err.message
+                });
+            });
         }
-
-    }).catch(err => {res.status(200).send({message: err.message});});
+    }).catch(err => {
+        res.status(500).send({
+            data:null, 
+            message: err.message
+        });
+    });
 }

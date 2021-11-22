@@ -1,27 +1,66 @@
 const db = require('../config/db.js');
 const sequelize = require('sequelize');
-const logger = require('../config/logger.js');
+var logger = require('../config/logger');
+var {
+    responseMessage,
+    sucessCode,
+    badRequestcode,
+    resourceNotFoundcode,
+    NoRecords
+} = require('../config/env');
 
-
-exports.findAll = (req, res) => {
-var customerId = req.body.customerId;
-if(customerId){
-db.sequelize.query('select customerName AS "customerName", customerId AS "customerId",dob AS "dob",gender AS "gender",maritalStatus AS "maritalStatus",mobileNumber AS "mobileNumber", phoneNumber AS "phoneNumber",emailId AS "emailId", panNumber AS "panNumber", aadhaarNumber AS "aadhaarNumber", street AS "street",area AS "area",city AS "city", state AS "state",pincode AS "pincode", resident AS "resident",customerType AS "customerType",occupation AS "occupation",customerCategory AS "customerCategory", salutation AS "salutation", isMinor AS "isMinor",taxableIncome AS "taxableIncome",profilePic as "profilePic", addressproof as "addressProof", signature as "signature", district as "district", country as "country" from api_customerdetails  WHERE customerId =:customerId',
-{ replacements: {customerId: customerId }, type: sequelize.QueryTypes.SELECT }
-).then(results =>{
-	//console.log(results);
-	var ss = JSON.stringify(results);
-	console.log(ss);
-  if(results.length>0)
-  {
-  return res.status(200).send({"message": "ok","responseCode":"200","response":results});
-  }
-  else{
-    res.send({"responseCode":"404","message": "customer details not found "});
-  }
-}).catch(err => {res.status(500).send({message: err.message});});
+exports.customerInformation = (req, res) => {
+    
+    var customerId = req.body.customerId;
+  
+    logger.info(`
+        ${new Date()} || 
+        ${req.originalUrl} || 
+        ${JSON.stringify(req.body)} || 
+        ${req.ip} || 
+        ${req.protocol} || 
+        ${req.method}
+    `);
+    
+    if(customerId) {
+        
+        var query = 'select customerName "customerName", customerId "customerId", dob "dob",gender "gender",\
+        maritalStatus "maritalStatus", mobileNumber "mobileNumber", phoneNumber "phoneNumber",\
+        emailId  "emailId", panNumber "panNumber", aadhaarNumber "aadhaarNumber", street "street",\
+        area  "area",city "city", state "state",pincode "pincode", resident "resident",\
+        customerType  "customerType",occupation  "occupation",customerCategory  "customerCategory",\
+        salutation "salutation", isMinor "isMinor",taxableIncome "taxableIncome",profilePic "profilePic",\
+        addressproof "addressProof", signature "signature", district "district", country "country",\
+		commaddrstreet "commAddrStreet", commaddrarea "commAddrArea", commaddrcity "commAddrCity", \
+		commaddrstate "commAddrState", commaddrpincode "commAddrPincode", commaddrdistrict "commAddrDistrict", commaddrcountry "commAddrCountry" from api_customerdetails  WHERE customerId =:customerId';
+       
+        // db query to fetch results
+        db.sequelize.query(query,{replacements:{customerId:customerId},type: sequelize.QueryTypes.SELECT}
+        ).then(results =>{
+            
+            if(results.length > 0){
+                return res.status(200).send({
+                    "responseCode":sucessCode,
+                    "response":results
+                });
+            } else {
+                return res.status(200).send({
+                    "responseCode":resourceNotFoundcode,
+                    "response":NoRecords
+                });
+            }
+        }).catch(err => {
+            logger.error(err);
+            return res.status(500).send({
+                data:null,
+                message:err.message
+            });
+        });
+    } else {
+        // validation for request
+        return res.status(200).send({
+            "responseCode":badRequestcode,
+            "response":responseMessage
+        });
+    }
 }
-else{
-  res.send({"responseCode":"401","message": "Invalid input parameters. Please check the key value pair in the request body."});
-}
-};
