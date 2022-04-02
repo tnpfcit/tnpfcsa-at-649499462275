@@ -1,8 +1,0 @@
-module.exports = function(app) {
-	   
-    const lookuplist = require('../controllers/lookupMasters.js');
-    
-    //relationships 
-    app.post('/tnpfc/v1/getRelationshipList', lookuplist.relationship);
-    
-}

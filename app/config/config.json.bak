@@ -1,9 +1,0 @@
-{
-    "tenant": "tnpowerfinance.onmicrosoft.com",
-    "authorityHostUrl": "https://login.microsoftonline.com/common",
-    "clientId": "0002beae-684f-4621-bf3b-48aefde6ce91",    
-    "resource":"https://graph.windows.net",
-
-    "port":3001,
-    "host":"localhost"
-}
