@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+
+<div onclick="close()">transaction over close the window</div>
+<script>
+function close(){
+    window.opener = self;
+    window.close();
+}
+</script>
+
+
+
+</body>
+</html>
