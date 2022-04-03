@@ -32,7 +32,7 @@ exports.singleLoanDetails = (req, res) =>{
             productDesc "productDesc" from api_loans WHERE  DEPOSITACCOUNTNUMBER =:accountNumber\
             UNION\
             SELECT DEPOSIT_NO AS "depositAccountNumber", NULL AS "loanAccountNumber", deposit_amt AS "depositAmount", 0 AS "loanAvialedAmount",\
-            (DEPOSIT_AMT * .70) AS "loanEligibleAmount", NULL AS "loanOpenDate", NULL AS "loanClosureDueDate", (RATE_OF_INT +2) AS "loanInterestRate",\
+            ROUND((DEPOSIT_AMT * .70),0) AS "loanEligibleAmount", NULL AS "loanOpenDate", NULL AS "loanClosureDueDate", (RATE_OF_INT +2) AS "loanInterestRate",\
             0 AS "loanInterestDue", NULL AS "loanAccountStatus", 0 AS "loaninterestCollected", null as "productDesc"\
             FROM DEPOSIT_SUB_ACINFO WHERE DEPOSIT_NO =:accountNumber) a where rownum=1';
             
