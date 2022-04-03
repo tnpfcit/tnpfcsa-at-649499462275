@@ -1,15 +1,17 @@
 const db = require('../config/db.js');
 const sequelize = require('sequelize');
 const logger = require('../config/logger');
-var {responseMessage,sucessCode,resourceNotFoundcode,badRequestcode,NoRecords} = require('../config/env');
+let {
+	responseMessage,
+	sucessCode,
+	resourceNotFoundcode,
+	badRequestcode,
+	NoRecords
+	} = require('../config/env');
 
 exports.depositInterestDetails = (req,res,err) => {
-    var {depositNumber,panNumber} = req.body;
-	
+    let {depositNumber,panNumber} = req.body;
 	panNumber = panNumber.toUpperCase();
-
-    console.log(depositNumber);
- 
     logger.info(`
         ${new Date()} || 
         ${req.originalUrl} || 
@@ -17,15 +19,11 @@ exports.depositInterestDetails = (req,res,err) => {
         ${req.ip} || 
         ${req.protocol}
     `);
-
     if(depositNumber && panNumber){
-        
-		var query = 'SELECT DEPOSIT_NO FROM DEPOSIT_ACINFO A WHERE CUST_ID IN (SELECT CUST_ID FROM CUSTOMER WHERE \
+		let query = 'SELECT DEPOSIT_NO FROM DEPOSIT_ACINFO A WHERE CUST_ID IN (SELECT CUST_ID FROM CUSTOMER WHERE \
 		             (PAN_NUMBER = :panNumber OR TAN_NO = :panNumber)) AND DEPOSIT_NO = :depositNumber';
-                
         db.sequelize.query(query,{replacements:{panNumber:panNumber,depositNumber:depositNumber},type: sequelize.QueryTypes.SELECT}
         ).then(results =>{
-
             if(results.length > 0){
 
                    var query = 'select acct_num "depositNumber", nvl(to_char(int_paid_date,\'dd-mm-yyyy\'),\'-\') as "lastIntDate",\
@@ -53,7 +51,7 @@ exports.depositInterestDetails = (req,res,err) => {
                         } else {
                             return res.status(200).send({
                                 "responseCode":resourceNotFoundcode,
-                                "response":"No record found for the entered Deposit number"
+                                "response":"No records found for the entered Deposit number"
                             });
                         }
 
