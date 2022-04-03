@@ -1,7 +1,7 @@
 const db = require('../config/db.js');
 const sequelize = require('sequelize');
 var logger = require('../config/logger');
-var {
+let {
     responseMessage,
     sucessCode,
     badRequestcode,
@@ -11,8 +11,7 @@ var {
 
 exports.chequeInformation = (req,res) => {
 
-    var {panNumber,chequeNumber,bankId} = req.body;
-	
+    let {panNumber,chequeNumber,bankId} = req.body;
 	panNumber = panNumber.toUpperCase();
 
     logger.info(`
