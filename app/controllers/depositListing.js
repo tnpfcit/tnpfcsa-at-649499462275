@@ -27,11 +27,14 @@ exports.depositList = (req, res) => {
     
     if(customerId && panNumber) {
         
-        var query ='select da.deposit_no "depositNumber", dsa.deposit_dt "depositDate", dsa.deposit_amt "depositAmt", ROUND (dsa.tot_int_amt / (deposit_period_mm / 12)) "interestAmt"  from customer c\
-        join deposit_acinfo da on c.cust_id = da.cust_id AND da.FIFTEENH_DECLARE = \'N\' AND da.TAX_DEDUCTIONS = \'Y\'\
-        join deposit_sub_acinfo dsa on da.deposit_no = dsa.deposit_no\
-        where c.cust_id =:customerId AND dsa.acct_status =\'NEW\' AND dsa.authorize_status = \'AUTHORIZED\' AND (c.pan_number =:panNumber OR c.tan_no = :panNumber)';
-       
+		var query = 'select "accountNumber" as "depositNumber","openDate" as "depositDate", "depositAmount" as "depositAmt",\ "annualInterest" as "interestAmt", FORMS_FILED_CNT as "noOfFormsFiled", AGGREGATE_AMT as "aggregateAmount" from \
+		table (get_cust_fd_details(:customerId)) a join deposit_Acinfo b on a."accountNumber" = b.deposit_no\
+		join customer c on b.cust_id = c.cust_id  \
+		join table(get_form15_submit_details(:customerId)) d on b.cust_id = d.customer_id\
+		where "customerId"=:customerId and (c.pan_number =:panNumber \
+		OR c.tan_no = :panNumber) AND b.FIFTEENH_DECLARE = \'N\' AND b.TAX_DEDUCTIONS = \'Y\'\
+		AND a."accountStatus" =\'NEW\' AND b.authorize_status = \'AUTHORIZED\'';
+		              
         // db query to fetch results
         db.sequelize.query(query,{replacements:{customerId:customerId, panNumber:panNumber},type: sequelize.QueryTypes.SELECT}
         ).then(results =>{
