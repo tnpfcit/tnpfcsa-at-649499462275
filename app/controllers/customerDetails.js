@@ -24,7 +24,7 @@ exports.customerInformation = (req, res) => {
     
     if(customerId) {
         
-        var query = 'select customerName "customerName", customerId "customerId", dob "dob",gender "gender",\
+        var query = 'select customerName "customerName", customerId "customerId", to_char(dob,\'dd-mm-yyyy\') "dob",gender "gender",\
         maritalStatus "maritalStatus", mobileNumber "mobileNumber", phoneNumber "phoneNumber",\
         emailId  "emailId", panNumber "panNumber", aadhaarNumber "aadhaarNumber", street "street",\
         area  "area",city "city", state "state",pincode "pincode", resident "resident",\
@@ -32,7 +32,7 @@ exports.customerInformation = (req, res) => {
         salutation "salutation", isMinor "isMinor",taxableIncome "taxableIncome",profilePic "profilePic",\
         addressproof "addressProof", signature "signature", district "district", country "country",\
 		commaddrstreet "commAddrStreet", commaddrarea "commAddrArea", commaddrcity "commAddrCity", \
-		commaddrstate "commAddrState", commaddrpincode "commAddrPincode", commaddrdistrict "commAddrDistrict", commaddrcountry "commAddrCountry" from api_customerdetails  WHERE customerId =:customerId';
+		commaddrstate "commAddrState", commaddrpincode "commAddrPincode", commaddrdistrict "commAddrDistrict", commaddrcountry "commAddrCountry",tdsExemptionLimit "tdsExemptionLimit",isForm15Eligible "isForm15Eligible" from api_customerdetails  WHERE customerId =:customerId';
        
         // db query to fetch results
         db.sequelize.query(query,{replacements:{customerId:customerId},type: sequelize.QueryTypes.SELECT}
