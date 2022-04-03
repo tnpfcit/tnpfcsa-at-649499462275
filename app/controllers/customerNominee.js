@@ -1,31 +1,40 @@
 const db = require('../config/db.js');
 const sequelize = require('sequelize');
-
+var {responseMessage,sucessCode,resourceNotFoundcode,badRequestcode,NoRecords} = require('../config/env');
 
 exports.findAll = (req, res) => {
-  console.log("dndjf");
- var customerId = req.body.customerId;
-if(customerId){
-db.sequelize.query('select customerId AS "customerId", guardianName AS "guardianName", depositNumber AS "depositNumber",nomineeName AS "nomineeName",relationship AS "relationship", nomineeIsMinor AS "nomineeIsMinor", nomineePhoneNumber AS "nomineePhoneNumber", guardianRelationship AS "guardianRelationship",guardianPhoneNumber AS "guardianPhoneNumber" from api_getCustomerNominees  WHERE customerId =:customerId',
-{ replacements: {customerId: customerId }, type: sequelize.QueryTypes.SELECT }
-  ).then(results => {
-    if(results.length>0)
-    {
-        return res.status(200).send({"message": "ok","responseCode":"200","response":results});
-    }
-    else{
-      res.send({"responseCode":"404","message": "customer details not found "});
-    }
-  }).catch(err => {
-    res.status(500).send({
-        message: err.message
-    });
-  });
+	let customerId = req.body.customerId;
+	if(customerId){
+		db.sequelize.query('select customerId AS "customerId", guardianName AS "guardianName", depositNumber AS "depositNumber",nomineeName AS "nomineeName",relationship AS "relationship", nomineeIsMinor AS "nomineeIsMinor", nomineePhoneNumber AS "nomineePhoneNumber", guardianRelationship AS "guardianRelationship",guardianPhoneNumber AS "guardianPhoneNumber" from api_getCustomerNominees  WHERE customerId =:customerId',
+		{ replacements: {customerId: customerId }, type: sequelize.QueryTypes.SELECT }
+		  ).then(results => {
+				if(results.length>0){
+					return res.status(200).send({
+					"responseCode":sucessCode,
+					"response":results
+					});
+				}
+				else{
+					return res.status(200).send({
+					"responseCode":resourceNotFoundcode,
+					"response":[],
+					"message":NoRecords
+					});
+				}
+		  }).catch(err => {
+				logger.error(err);
+				return res.status(500).send({
+				data:null,
+				message: err.message
+				});
+		  });
+	}else{
+		return res.status(200).send({
+		"responseCode":badRequestcode,
+		"response":responseMessage
+		});
+	}
 }
-  else{
-    res.send({"responseCode":"401","message": "Invalid input parameters. Please check the key value pair in the request body."}); 
-  }
-  };
   
  
   

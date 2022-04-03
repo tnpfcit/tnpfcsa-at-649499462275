@@ -42,7 +42,7 @@ exports.existingBankDetails = (req,res) =>{
 			}
 			}).catch(err => {
 				logger.error(err);
-				res.status(500).send({
+				return res.status(500).send({
 				data:null,
 				message: err.message
 				});
