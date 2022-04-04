@@ -3,105 +3,181 @@ const sequelize = require('sequelize');
 var http = require('http');
 var request = require('request');
 var moment = require('moment');
+var logger = require('../config/logger');
+var {responseMessage,badRequestcode,NoRecords,activeDetailsMissedPan,activeDetailsPan,
+    resourceNotFoundcode,message,validPan,invalidPan,technicalError,
+    validAadhaar,invalidAadhaar,videoIdentification,aadhaarurl,panUrl} = require('../config/env');
 
 
-exports.verify = (req,res) =>{
+exports.documentVerification = (req,res) =>{
 
-var {number,type,name,dob} = req.body;
-console.log("date of birth======================="+dob);
-var responseDate = moment(dob).format('DD/MM/YYYY');
-console.log("response date =============="+responseDate);  
-    if(number && type == "aadhar")
-        {
-            db.sequelize.query('select UNIQUE_ID as "aadhaarNumber" from customer where UNIQUE_ID =:number',
-            {replacements: {number: number}, type: sequelize.QueryTypes.SELECT}).then(results=>{
-            console.log(results);    
-            if (results.length > 0)
-                {
-                    return res.status(200).send({"responseCode":3, "response":"Looks like You are a registered user, Please login to avail Online Services", "number":results[0].UNIQUE_ID});
-                }
-            else
-                {
-			  	   /*request.get("http://aadharelb-1765314439.ap-south-1.elb.amazonaws.com/verifyAADHAR?aadhar="+number, (error, response, body) => {
-                     if(response.body && response.statusCode !== 500){
-                          
-                            console.log(response.body);
-                            var parsedAadhaar = JSON.parse(response.body);
-                            //console.log("================="+parsedAadhaar.responseCode);
-                            //console.log(response.body);
-                            if (parsedAadhaar.responseCode == 0){
-                                    return res.status(200).send({"responseCode":0,"response":"Please enter a valid Aadhaar number."});
-                            }
-                            else if(parsedAadhaar.responseCode == 1){
-                                    return res.status(200).send({"responseCode":1,"response":"Aadhaar number verified successfully."});   
-                            } else if (parsedAadhaar.responseCode == -1){
-								    return res.status(200).send({"responseCode":-1,"response":"Technical error. Please try again."});  
-							}
-                            else {
-                                    return res.status(200).send({"responseCode":-1,"response":"Technical error. Please try again."});
-                            }
-                    }
-                     else{
-                            return res.status(404).send({"response":"Resource Not Found"});
-                     }                 
-                    })*/
-					 return res.status(200).send({"responseCode":1,"response":"Aadhaar number verified successfully."});  
-					
-                }
-
-            }).catch(err => { res.status(500).send({ message: err.message});});
-			
-        }
+	let {
+			number,
+			type,
+			name,
+			dob,
+			isDbVerifyReq 
+		} = req.body;
     
-    else if (number && type == "pan" && name && responseDate)
-        {
-            db.sequelize.query('select PAN_NUMBER as "panNumber" from customer where PAN_NUMBER =:number',
-            {replacements: {number: number}, type: sequelize.QueryTypes.SELECT}).then(results=>{
-            //console.log(results);
-            //console.log("ncnvvm,cmc,cm,cmv,cmv,mc,vm,c,v");  
-            if(results.length > 0)
-                {
-                    return res.status(200).send({"responseCode":3,"response":"Looks like You are a registered user, Please login to avail Online Services","number":results[0].PAN_NUMBER});
-                }
-            else
-                {
-                    
-					//console.log("bvfvjfjhfjfdfjdhfjhfjhjfjfjgjfgjf");
-				    /*request.get( "http://test-pan-bot-elb-1259185693.ap-south-1.elb.amazonaws.com/verifyPAN?pan="+number+'&name='+name+'&dob='+responseDate, (error, response, body) => {
-                    console.log("status========"+response.statusCode);
-                    if(response.body && response.statusCode !== 500){
-                        console.log(response.body);
-                        var parsedPan = JSON.parse(response.body);
-						//console.log(parsedPan);
-                        var activeDetailsPan = "PAN is Active and the details are matching with PAN database.";
-                       // console.log("result  1"+activeDetailsPan);
-                        var activeDetailsMissedPan = "PAN is Active but the details are not matching with PAN database.";
-                       // console.log("result 2"+activeDetailsMissedPan);
-                       if (parsedPan && parsedPan.responseCode == 0){
-                                return res.status(200).send({"responseCode":0,"response":"Please enter a valid Pan number."});
-                        }
-                       else if(parsedPan && parsedPan.responseText == activeDetailsPan){
-                                return res.status(200).send({"responseCode":1,"response":"Pan number verified successfully."});   
-                        }
-                        else if(parsedPan && parsedPan.responseText == activeDetailsMissedPan){
-                            return res.status(200).send({"responseCode":2,"response":"Video based Customer Identification Process will be initiated by TNPF."});   
-                        }
-                        else{
-                                //for(var i=1; 
-								return res.status(200).send({"responseCode":-1,"response":"Technical error. Please try again."});
-                        }
-                    }
-                    else{
-                        return res.status(500).send({"response":"Internal error. Please try again."});
-                    } 
-                   })*/
-				   return res.status(200).send({"responseCode":2,"response":"Video based Customer Identification Process will be initiated by TNPF."});   
-                }
-            }).catch(err => {res.status(500).send({message: err.message});});
+	isDbVerifyReq =  isDbVerifyReq ?  isDbVerifyReq : 'Y';
+	logger.info(`
+        ${new Date()} || 
+        ${req.originalUrl} ||                                        
+        ${JSON.stringify(req.body)} || 
+        ${req.ip} || 
+        ${req.protocol} || 
+        ${req.method}
+    `);
+	let responseDate = moment(dob).format('DD/MM/YYYY');
+    if(number && type == "aadhar"){
+		if(isDbVerifyReq !== 'N'){
+        
+        let query = 'select UNIQUE_ID as "aadhaarNumber" from customer c where UNIQUE_ID =:number AND NOT EXISTS(SELECT * FROM CUSTOMER_SUSPENDED CS WHERE C.CUST_ID = CS.CUST_ID and cs.status=\'SUSPENDED\') AND C.AUTHORIZE_STATUS = \'AUTHORIZED\' AND (CUSTOMER_STATUS !=\'DECEASED\' OR CUSTOMER_STATUS IS NULL)';
+        
+        db.sequelize.query(query,{replacements: {number: number}, type: sequelize.QueryTypes.SELECT}
+        ).then(results=>{   
+            if (results.length > 0){
+                 return res.status(200).send({
+                     "responseCode":3,
+                     "response":message,
+                     "number":results[0].UNIQUE_ID
+                });
+            } else {
+				request.get(aadhaarurl+number+"&proofRequired=true", (error, response, body) => {        //here starts 
+				if(response.body && response.statusCode !== 500){
+					var parsedAadhaar = JSON.parse(response.body);
+					if (parsedAadhaar.code == 0){
+						return res.status(200).send({
+						"responseCode":0,
+						"response":invalidAadhaar
+						});
+					} else if(parsedAadhaar.code == 1){
+						return res.status(200).send({
+						"responseCode":1,
+						"response":validAadhaar
+						});
+					} else if(parsedAadhaar.code == -1){
+						return res.status(200).send({
+						"responseCode":-1,
+						"response":"Technical Error. Try again."
+						});
+					} else {
+						return res.status(200).send({
+						"responseCode":-1,
+						"response":"Technical Error. Try again."
+						});
+					}
+				} else {
+					return res.status(404).send({
+					"responseCode":resourceNotFoundcode,
+					"response":"Resource Not Found"
+					});
+				}                 
+				})         
+            }
+        }).catch(err => { 
+            logger.error("aadhar number searching query fails ==="+ err);
+            return res.status(500).send({
+			data:null,
+			message: err.message
+			});
+        });
+        } else {
+			request.get(aadhaarurl+number+"&proofRequired=true", (error, response, body) => {
+			    if(response.body && response.statusCode !== 500){
+                    var parsedAadhaar = JSON.parse(response.body);
+                    if (parsedAadhaar.code == 0){
+                        return res.status(200).send({
+                            "responseCode":0,
+                            "response":invalidAadhaar
+                        });
+                    } else if(parsedAadhaar.code == 1){
+                        return res.status(200).send({
+                            "responseCode":1,
+                            "response":validAadhaar
+                        });   
+                    } else if(parsedAadhaar.code == -1){
+						return res.status(200).send({
+						"responseCode":-1,
+						"response":"Technical Error. Try again."
+						});
+					} else {
+						return res.status(200).send({
+						"responseCode":-1,
+						"response":"Technical Error. Try again."
+						});
+					}
+                } else {
+                    return res.status(404).send({
+                        "responseCode":resourceNotFoundcode,
+                        "response":"Resource Not Found"
+                    });
+                }                 
+            });
         }
-    else
-        {
-            return res.status(422).send({"response": "Invalid input parameters check the key value pair in the request body"});
-        }
-
+    }
+    else if (number && type == "pan" && name && dob){
+		var responseDate = moment(dob).format('DD/MM/YYYY');
+		
+		let query = 'select UNIQUE_ID as "aadhaarNumber" from customer c where UNIQUE_ID =:number AND NOT EXISTS(SELECT * FROM CUSTOMER_SUSPENDED CS WHERE C.CUST_ID = CS.CUST_ID and cs.status=\'SUSPENDED\') AND C.AUTHORIZE_STATUS = \'AUTHORIZED\' AND (CUSTOMER_STATUS !=\'DECEASED\' OR CUSTOMER_STATUS IS NULL)';
+		
+		 db.sequelize.query(query,{replacements: {number: number}, type: sequelize.QueryTypes.SELECT}).then(results=>{
+		//console.log(results);
+		//console.log("ncnvvm,cmc,cm,cmv,cmv,mc,vm,c,v");  
+		if(results.length > 0){
+				return res.status(200).send({
+					"responseCode":3,
+					"response":message,
+					"number":results[0].PAN_NUMBER
+				});
+		} else {
+			/*request.get(panUrl+number+'&name='+name+'&dob='+responseDate, (error, response, body) => {
+			if(response.body && response.statusCode !== 500){
+				var parsedPan = JSON.parse(response.body);
+				if (parsedPan && parsedPan.responseCode == 0){
+					return res.status(200).send({
+					"responseCode":0,
+					"response":invalidPan
+					});
+				} else if (parsedPan && parsedPan.responseText == activeDetailsPan){
+					return res.status(200).send({
+					"responseCode":1,
+					"response":validPan
+					});   
+				} else if (parsedPan && parsedPan.responseText == activeDetailsMissedPan){
+					return res.status(200).send({
+					"responseCode":2,
+					"response":videoIdentification
+					});   
+				} else {
+					return res.status(200).send({
+					"responseCode":-1,
+					"response":technicalError
+					});
+				}
+			} else {
+				return res.status(500).send({
+				data:null,
+				"response":technicalError
+				});
+			} 
+			})*/
+			return res.status(200).send({
+			"responseCode":2,
+			"response":videoIdentification
+			});
+		}
+		}).catch(err => {
+			logger.error("pan selecting query fails ====="+ err);
+			return res.status(500).send({
+			data:null,
+			message: err.message
+			});
+		});
+    } else {
+        return res.status(400).send({
+		"responseCode":badRequestcode,
+		"response":responseMessage
+        });
+    }
 }
