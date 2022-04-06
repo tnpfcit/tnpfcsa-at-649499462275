@@ -1,25 +1,40 @@
 const db = require('../config/db.js');
 const sequelize = require('sequelize');
 const logger = require('../config/logger.js');
+const {responseMessage,sucessCode,resourceNotFoundcode,NoRecords} = require('../config/env');
 
 
-exports.agelist = (req,res) =>{
-db.sequelize.query('select MINOR_AGE,RETIREMENT_AGE,SUPER_SR_CITIZEN_AGE FROM PARAMETERS', { type: sequelize.QueryTypes.SELECT}).then(results=>{
-    console.log(results);
-    if(results)
-    {
-        return res.status(200).send({"message": "ok","responseCode":"200","response":results});
-    }
-    else{
-      res.send({"responseCode":"404","message": " age resource not found"});
-    }
+exports.agelist = (req,res,err) =>{
+	logger.info(`
+        ${new Date()} || 
+        ${req.originalUrl} || 
+        ${JSON.stringify(req.body)} || 
+        ${req.ip} || 
+        ${req.protocol}
+    `);
+	
+	var query = 'select MINOR_AGE "minorAge", RETIREMENT_AGE "retirementAge",\
+    SUPER_SR_CITIZEN_AGE "superSeniorCitizen" FROM PARAMETERS';
+	
+	db.sequelize.query(query,{type: sequelize.QueryTypes.SELECT}
+	).then(results=>{
+     if(results.length > 0){
+            return res.status(200).send({
+                "responseCode":sucessCode,
+                "response":results
+            });
+        } else {
+            return res.status(404).send({
+                "responseCode":resourceNotFoundcode,
+                "response":NoRecords
+            });
+        }
     }).catch(err => {
-        res.status(500).send({
+        return res.status(500).send({
+            data:null,
             message: err.message
-        })
+        });
     });
 }
-
-
 
    
