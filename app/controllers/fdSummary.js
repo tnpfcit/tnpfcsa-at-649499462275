@@ -1,36 +1,51 @@
 const db = require('../config/db.js');
 const sequelize = require('sequelize');
 var logger = require('../config/logger');
-var {responseMessage,sucessCode,resourceNotFoundcode,NoRecords} = require('../config/env');
+var {responseMessage,sucessCode,resourceNotFoundcode,NoRecords,badRequestcode} = require('../config/env');
 
-
-exports.findAll = (req, res) => {
-var accountNumber = req.body.accountNumber;
- logger.info(`
-    ${new Date()} || 
-    ${req.originalUrl} || 
-    ${JSON.stringify(req.body)} || 
-    ${req.ip} || 
-    ${req.protocol} || 
-    ${req.method}
-  `);
+exports.depositSummary = (req, res) => {
+	let accountNumber = req.body.accountNumber;
+	logger.info(`
+		${new Date()} || 
+		${req.originalUrl} || 
+		${JSON.stringify(req.body)} || 
+		${req.ip} || 
+		${req.protocol} || 
+		${req.method}
+	`);
     
-if(accountNumber){
-db.sequelize.query('select accountNumber AS "accountNumber",productDesc AS "productDesc", productId AS "productId", openDate AS "openDate", maturityDate AS "maturityDate", interestRatePercent AS "interestRatePercent", depositAccountType AS "depositAccountType", jointHolder1 AS "jointHolder1", jointHolder2 AS "jointHolder2",intpayFrequency AS "intpayFrequency", interestAmount AS "interestAmount", depositAmount AS "depositAmount", maturityAmount AS "maturityAmount", interestPaid AS "interestPaid",fdrRequired AS "fdrRequired", bankName AS "bankName", ifscCode AS "ifscCode", accountNo AS "accountNo", accountStatus AS "accountStatus",isDepositRenewable AS "isDepositRenewable",nomineeName AS "nomineeName",nomineeRelationship AS "nomineeRelationship",isNomineeMajor AS "isNomineeMajor",nomineeDob AS "nomineeDob",nomineeGuardianName AS "nomineeGuardianName",nomineeGuardianRelationship AS "nomineeGuardianRelationship",isDepositClosable AS "isDepositClosable",isLoanEligible AS "isLoanEligible", tenure AS "tenure", eFdrUrl AS "eFdrUrl", accountHolderName AS "accountHolderName",taxDocSubmitted AS "taxDocSubmitted",bankBranchName AS "bankBranchName", bankBranchAddress AS "bankBranchAddress",depositCustCategory AS "depositCustCategory",closureType AS "closureType",isRenewableReason AS "isRenewableReason", isClosableReason AS "isClosableReason", isLoanEligibleReason AS "isLoanEligibleReason" from API_fd_summary  WHERE accountNumber =:accountNumber',
-{ replacements: {accountNumber: accountNumber }, type: sequelize.QueryTypes.SELECT }
-).then(results =>{
-  if(results.length>0)
-  {
-  return res.status(200).send({"message": "ok","responseCode":"200","response":results});
-  }
-  else
-  {
-    res.send({"responseCode":"404","message": "customer details not found "});
-  }
-}).catch(err => {res.status(500).send({message: err.message});});
+	if(accountNumber){
+		var query = 'select accountNumber "accountNumber",productDesc "productDesc", productId "productId", openDate "openDate", maturityDate "maturityDate",\
+		interestRatePercent "interestRatePercent", depositAccountType "depositAccountType", jointHolder1 "jointHolder1", jointHolder2 "jointHolder2",\
+		intpayFrequency "intpayFrequency", interestAmount "interestAmount", depositAmount "depositAmount", maturityAmount "maturityAmount",interestPaid "interestPaid",\
+		fdrRequired "fdrRequired", bankName "bankName", ifscCode "ifscCode", accountNo "accountNo", accountStatus "accountStatus",isDepositRenewable "isDepositRenewable",\
+		nomineeName "nomineeName",nomineeRelationship "nomineeRelationship",isNomineeMajor "isNomineeMajor",nomineeDob "nomineeDob",nomineeGuardianName "nomineeGuardianName",\
+		nomineeGuardianRelationship "nomineeGuardianRelationship",isDepositClosable "isDepositClosable",isLoanEligible "isLoanEligible", tenure "tenure", eFdrUrl "eFdrUrl",\
+		accountHolderName "accountHolderName", taxDocSubmitted "taxDocSubmitted",bankBranchName "bankBranchName", bankBranchAddress "bankBranchAddress",depositCustCategory "depositCustCategory",closureType "closureType",isRenewableReason "isRenewableReason", isClosableReason "isClosableReason", isLoanEligibleReason "isLoanEligibleReason" from API_fd_summary  WHERE accountNumber =:accountNumber';
+	
+		db.sequelize.query(query,{replacements:{accountNumber:accountNumber},type: sequelize.QueryTypes.SELECT}
+		).then(results =>{
+			if(results.length>0){
+				return res.status(200).send({
+				"responseCode":sucessCode,
+				"response":results
+				});
+			}else{
+				return res.status(404).send({
+				"responseCode":resourceNotFoundcode,
+				"response":NoRecords
+				});
+			}
+		}).catch(err => {
+			return res.status(500).send({
+			data:null,
+			message: err.message
+			});
+		});
+	} else {
+		return res.status(400).send({
+		"responseCode":badRequestcode,
+		"response":responseMessage
+		});
+	}
 }
-else
-{
-  res.send({"responseCode":"401","message": "Invalid input parameters. Please check the key value pair in the request body."});
-}
-};
