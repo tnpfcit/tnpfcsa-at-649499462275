@@ -18,7 +18,7 @@ exports.azureAuthentication = (req, res) => {
     // Get token.
     var AuthenticationContext = adal.AuthenticationContext;
     var authorityUrl = config.authorityHostUrl + '/' + config.tenant;
-    var context = new AuthenticationContext(authorityUrl);
+    var context = new AuthenticationContext(authorityUrl, true, new adal.MemoryCache());
     var roleId = null;
 	var userId = null;
 	var rollName = null;
