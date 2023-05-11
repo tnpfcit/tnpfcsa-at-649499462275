@@ -1,11 +1,11 @@
 'use strict'
 const Sequelize = require('sequelize-oracle');
 //oracledb.maxRows 
-const sequelize = new Sequelize('CBMS','TNPFC','TnPfCc3m5', {
+const sequelize = new Sequelize('CBMS','TNPFC','', {
  database:'CBMS',
  username:'TNPFC',
- password:'TnPfCc3m5',
- host:'3.6.248.29',
+ password:'',
+ host:'',
  port:'1521',
 dialect: 'oracle',
 logging: false,
