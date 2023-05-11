@@ -32,12 +32,14 @@ exports.customerInformation = (req, res) => {
         salutation "salutation", isMinor "isMinor",taxableIncome "taxableIncome",profilePic "profilePic",\
         addressproof "addressProof", signature "signature", district "district", country "country",\
 		commaddrstreet "commAddrStreet", commaddrarea "commAddrArea", commaddrcity "commAddrCity", \
-		commaddrstate "commAddrState", commaddrpincode "commAddrPincode", commaddrdistrict "commAddrDistrict", commaddrcountry "commAddrCountry",tdsExemptionLimit "tdsExemptionLimit",isForm15Eligible "isForm15Eligible" from api_customerdetails  WHERE customerId =:customerId';
+		commaddrstate "commAddrState", commaddrpincode "commAddrPincode", commaddrdistrict "commAddrDistrict", commaddrcountry "commAddrCountry",tdsExemptionLimit "tdsExemptionLimit",isForm15Eligible "isForm15Eligible",isKYCAvailable "isKYCAvailable",\
+		isdepositallowedreason "isDepositAllowedReason",depositholding "depositHolding", loanavailedamt "loanAvailedAmt",\
+		exemdetails "exemDetails",idproof "idProof" from api_customerdetails  WHERE customerId =:customerId';
        
         // db query to fetch results
         db.sequelize.query(query,{replacements:{customerId:customerId},type: sequelize.QueryTypes.SELECT}
         ).then(results =>{
-            
+            console.log("result==="+JSON.stringify(results));
             if(results.length > 0){
                 return res.status(200).send({
                     "responseCode":sucessCode,
