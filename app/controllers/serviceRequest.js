@@ -253,8 +253,8 @@ exports.serviceRequest = (req, res) => {
                                 message: err.message 
                             }); 
                         });
-            } else if (serviceType == "form15gSubmission" && customerId && depositNo && panNumber ){
-                                    console.log("form coming==========");
+            } else if (serviceType == "form15gSubmission" && customerId && depositNo && panNumber && estimateInterest && (estimateTotIncome || estimateTotIncome == 0) && (formFiled || formFiled == 0)){
+						console.log ("inside form15");
                         db.sequelize.query('select API_WEBPORTAL_V1_G_DETAILS (:serviceType, :customerId, :depositNo, :panNumber,\
                             :assessmentYear, :estimateInterest, :estimateTotIncome, :formFiled, :aggregateAmt, :channelId,:agentId) as ACK_ID from dual',
                             {replacements: {
@@ -273,12 +273,38 @@ exports.serviceRequest = (req, res) => {
                         ).then(results => {
                             var info = "Form15 submission";
                             var ackId = results[0].ACK_ID;
-                            require('../middleware/serviceRequestMessage.js')(depositorName,phNumber,info,ackId);
-                            require('../middleware/servicerequestMessage1.js')(depositorName,phNumber,info,ackId);
-                            return res.status(200).send({
-                                "responseCode":sucessCode, 
-                                "response": results[0]
-                            });
+							console.log("ack_id===="+ackId);
+							if (ackId) {
+								var query = 'select count(*) cnt from web_portal_g where acknwldge_id =:ackId';
+								db.sequelize.query(query,{replacements:{ackId:ackId},type:sequelize.QueryTypes.SELECT}
+								).then(results1 => {
+									console.log("inside results");
+									require('../middleware/serviceRequestMessage.js')(depositorName,phNumber,info,ackId);
+									let cnt = results1[0].CNT;
+									console.log("query result"+results1[0].CNT);
+									if (cnt >0) {
+										console.log("inside cnt>0");
+										require('../middleware/servicerequestMessage1.js')(depositorName,phNumber,info,ackId);
+										return res.status(200).send({
+											"responseCode":sucessCode, 
+											"response": results[0]
+										});
+									}
+									else {
+										console.log("inside cnt=="+cnt);
+										console.log("inside elese"+results1[0].CNT);
+										return res.status(200).send({
+											"responseCode":sucessCode, 
+											"response": results[0],
+											"responseMsg":"As your gross interest amount + other income that you have entered exceeds basic exemption limit as per IT Act 1961, necessary TDS will be deducted on your gross interest at the appropriate rate as per Income Tax Act/Finance Act amended from time to time. Hence submission of 15G/H becomes invalid."
+										});
+									}
+								}).catch(err => { 
+									res.status(500).send({
+									message: err.message
+									});
+								});
+							};
                         }).catch(err => { 
                             logger.error("15gh function error"+err);
                             res.status(500).send({
@@ -287,7 +313,7 @@ exports.serviceRequest = (req, res) => {
                             }); 
                         });
 
-            } else if (serviceType == "form15gSubmission" && customerId && depositNumber && panNumber /*&& estimateInterest && (estimateTotIncome || estimateTotIncome == 0)  && (formFiled || formFiled == 0)&& (aggregateAmt || aggregateAmt == 0 )*/){
+            } else if (serviceType == "form15gSubmission" && customerId && depositNumber && panNumber && assessmentYear && estimateInterest && estimateTotIncome && formFiled){
 
                         /*db.sequelize.query('select API_WEBPORTAL_G_DETAILS (:serviceType, :customerId, :depositNo, :panNumber,\
                             :assessmentYear, :estimateInterest, :estimateTotIncome, :formFiled, :aggregateAmt, :channelId,:agentId) as ACK_ID from dual',
@@ -321,7 +347,7 @@ exports.serviceRequest = (req, res) => {
                             }); 
                         });*/
 						
-						db.sequelize.query('select API_WEBPORTAL_G_DETAILS (:serviceType, :customerId, :depositNumber, :panNumber,\
+						/*db.sequelize.query('select API_WEBPORTAL_G_DETAILS (:serviceType, :customerId, :depositNumber, :panNumber,\
                             :assessmentYear, :estimateInterest, :estimateTotIncome, :formFiled, :aggregateAmt, :channelId,:agentId) as ACK_ID from dual',
                             {replacements: {
                                 serviceType: serviceType, 
@@ -351,7 +377,7 @@ exports.serviceRequest = (req, res) => {
                                 data:null, 
                                 message: err.message 
                             }); 
-                        });
+                        });*/
             } else if(serviceType == 'dob' && panNumber && dob && name && customerId) {
                 
                 dob = moment(dob).format('DD/MMM/YYYY');
