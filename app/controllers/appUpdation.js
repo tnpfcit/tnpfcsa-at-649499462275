@@ -6,6 +6,7 @@ var {sucessCode} = require('../config/env');
 
 
 exports.appupdate = (req,res) =>{
+    
     logger.info(`
         ${new Date()} || 
         ${req.originalUrl} || 
@@ -13,6 +14,7 @@ exports.appupdate = (req,res) =>{
         ${req.ip} || 
         ${req.protocol}
     `);
+    
     return res.status(200).send({
         "responseCode":sucessCode,
         "response":appUpdation
