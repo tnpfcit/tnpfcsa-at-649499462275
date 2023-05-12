@@ -103,7 +103,7 @@ exports.verifyToken = (req, res, next) => {
     var authorization = req.headers['authorization'];
     if (authorization) {
         var bearer = authorization.split(" ");
-        var jwtToken = bearer[1];
+        var jwtToken = bearer[0];
         if (jwtToken) {
             aad.verify(jwtToken, { audience: audience, tenantId: tenantId }, function (err, result) {
                 if (result) {
