@@ -40,8 +40,8 @@ exports.depositRenewFd1 = (req,res) =>{
 		jointHolder2Name
     } = req.body;
 	
-	if(newDepositAmt < 50000){
-		return res.status(500).send({"responseCode":"500","response":"Deposit Amount Should not be less than Rs 50000"});
+	if(newDepositAmt < 200000){
+		return res.status(500).send({"responseCode":"500","response":"Deposit Amount Should not be less than Rs. 2,00,000"});
 	}
 
 
@@ -110,14 +110,16 @@ exports.depositRenewFd1 = (req,res) =>{
                         var query = 'select decode (cust_type,\'INDIVIDUAL\',fname,comp_name) "depositorName",cp.phone_number "phoneNumber" from customer c left join cust_phone cp on c.cust_id = cp.cust_id where c.cust_id =:customerId';
                         db.sequelize.query(query,{replacements:{customerId: customerId}, type: sequelize.QueryTypes.SELECT}
                         ).then(results =>{
-                                console.log("ackId" + ackId);
-                                var acknowledgementId = ackId;
+                                let acklast7Digits = ackId.substr(3,8);
                                 var phoneNumber = results[0].phoneNumber;
                                 var depositorName = results[0].depositorName.length>16? results[0].depositorName.substring(0,16):results[0].depositorName;
-                                var msg = urlencode('Dear '+depositorName+', Your Service Request No. '+acknowledgementId+' for Deposit Renewal has been received by TN Power Finance for processing');
-                                var data = 'username=' + username + '&hash=' + hash + '&sender=' + sender + '&numbers=' + phoneNumber + '&message=' + msg;
-                                request("https://api.textlocal.in/send?"+ data, (error, response, body) => {});
-                                return res.status(200).send({"responseCode":sucessCode, "response":{"acknowledgementId":acknowledgementId}});
+								var msg = urlencode('Dear '+depositorName+', Service Request No.ACK'+acklast7Digits+' for Deposit Renewal has been received for processing.-TNPFIDC');
+								var data = 'APIKey=6IBUmYiLRk659H5Blt03RQ&senderid=TNPFFD&channel=Trans&DCS=0&flashsms=0&number='+phoneNumber+'&text='+msg+'&route=6';
+								request.get("http://182.18.143.11/api/mt/SendSMS?"+ data, (error, response, body) => {});
+                                //var msg = urlencode('Dear '+depositorName+', Your Service Request No. '+acknowledgementId+' for Deposit Renewal has been received for processing. - Tamil Nadu Power Finance (TNPF)');
+                                //var data = 'username=' + username + '&hash=' + hash + '&sender=' + sender + '&numbers=' + phoneNumber + '&message=' + msg;
+                                //request("https://api.textlocal.in/send?"+ data, (error, response, body) => {}); - done on dec 16 tnpfc 2211
+                                return res.status(200).send({"responseCode":sucessCode, "response":{"acknowledgementId":ackId}});
                         }).catch(err => {res.status(500).send({message: err.message});});
                     }).catch(err => {res.status(500).send({message: err.message});});
                 } else {
@@ -207,21 +209,21 @@ exports.depositRenewFd = (req,res) =>{
                     
                     var ackId = results[0].ACKNOWLEDGEMENTID;
                     var query = 'select decode (cust_type,\'INDIVIDUAL\',fname,comp_name) "depositorName",cp.phone_number "phoneNumber" from customer c left join cust_phone cp on c.cust_id = cp.cust_id where c.cust_id =:customerId';
-                    
                     db.sequelize.query(query,{replacements:{customerId: customerId}, type: sequelize.QueryTypes.SELECT}
-                    ).then(results =>{
-                               
-                        var acknowledgementId = ackId;
-                        var phoneNumber = results[0].phoneNumber;
-                        var depositorName = results[0].depositorName.length>16? results[0].depositorName.substring(0,16):results[0].depositorName;
-                        var msg = urlencode('Dear '+depositorName+', Your Service Request No. '+acknowledgementId+' for Deposit Renewal has been received by TN Power Finance for processing');
-                        var data = 'username=' + username + '&hash=' + hash + '&sender=' + sender + '&numbers=' + phoneNumber + '&message=' + msg;
-                        request("https://api.textlocal.in/send?"+ data, (error, response, body) => {});
-                        
+                    ).then(results =>{ 
+						let acklast7Digits = ackId.substr(3,8);
+						var phoneNumber = results[0].phoneNumber;
+						var depositorName = results[0].depositorName.length>16? results[0].depositorName.substring(0,16):results[0].depositorName;
+						var msg = urlencode('Dear '+depositorName+', Service Request No.ACK'+acklast7Digits+' for Deposit Renewal has been received for processing.-TNPFIDC');
+						var data = 'APIKey=6IBUmYiLRk659H5Blt03RQ&senderid=TNPFFD&channel=Trans&DCS=0&flashsms=0&number='+phoneNumber+'&text='+msg+'&route=6';
+						request.get("http://182.18.143.11/api/mt/SendSMS?"+ data, (error, response, body) => {});
+                        //var msg = urlencode('Dear '+depositorName+', Your Service Request No. '+acknowledgementId+' for Deposit Renewal has been received for processing. - Tamil Nadu Power Finance (TNPF)');
+                        //var data = 'username=' + username + '&hash=' + hash + '&sender=' + sender + '&numbers=' + phoneNumber + '&message=' + msg;
+                        //request("https://api.textlocal.in/send?"+ data, (error, response, body) => {}); - done on dec 16 tnpfc 2211
                         return res.status(200).send({
                             "responseCode":sucessCode, 
                             "response":{
-                                "acknowledgementId":acknowledgementId
+                                "acknowledgementId":ackId
                             }
                         });
                     }).catch(err => {
@@ -357,7 +359,7 @@ exports.depositRenewFd = (req,res) =>{
                         var acknowledgementId = ackId;
                         var phoneNumber = results[0].phoneNumber;
                         var depositorName = results[0].depositorName.length>16? results[0].depositorName.substring(0,16):results[0].depositorName;
-                        var msg = urlencode('Dear '+depositorName+', Your Service Request No. '+acknowledgementId+' for Deposit Renewal has been received by TN Power Finance for processing');
+                        var msg = urlencode('Dear '+depositorName+', Your Service Request No. '+acknowledgementId+' for Deposit Renewal has been received for processing. - Tamil Nadu Power Finance (TNPF)');
                         var data = 'username=' + username + '&hash=' + hash + '&sender=' + sender + '&numbers=' + phoneNumber + '&message=' + msg;
                         request("https://api.textlocal.in/send?"+ data, (error, response, body) => {});
                         
