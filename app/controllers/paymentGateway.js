@@ -58,8 +58,8 @@ exports.payment = (req, res , err) => {
 		 ${req.ip} || 
 		 ${req.protocol}`
 	);
-	if(depositAmount < 50000){
-		return res.status(500).send({"responseCode":"500","response":"Deposit Amount Should not be less than Rs 50000"});
+	if(depositAmount < 200000){
+		return res.status(500).send({"responseCode":"500","response":"Deposit Amount Should not be less than Rs. 2,00,000"});
 	}
 	logger.info("REQ BODY==="+JSON.stringify(req.body));
     let channelId = (reqChannel == 'android' ||reqChannel == 'ios') ? 'app' : 'portal';
