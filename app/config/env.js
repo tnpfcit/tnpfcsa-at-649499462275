@@ -1,28 +1,26 @@
 module.exports = {
-    key:"5M51M4KG6KG3BN4PBWNAD9BCTLDMK29H",
-    iv:"5M51M4KG6KG3BN4P",
-    //appkey:"QENSEGY3FOF7FTRLQENSEGY3FOF7FTRL",
-    //appiv:"QENSEGY3FOF7FTRL",
-	appkey:"SBN59A2O0WBZLULJSBN59A2O0WBZLULJ",
-    appiv:"SBN59A2O0WBZLULJ",
-    androidmerchantId:"M00035",
-	appmerchantId:"M00035",
-    merchantId:"M00034",
-	iosmerchantId:"M00093",
-	iosappkey:"rC2sB0pl2UY4Zb0TR0cC6EH7Um5QF6ek",
-	iosappiv:"rC2sB0pl2UY4Zb0T",
+    key:"QENSEGY3FOF7FTRLQENSEGY3FOF7FTRL",
+    iv:"QENSEGY3FOF7FTRL",
+	appkey:"QENSEGY3FOF7FTRLQENSEGY3FOF7FTRL",
+    appiv:"QENSEGY3FOF7FTRL",
+    androidmerchantId:"M0000346",
+    appmerchantId:"M0000346",
+	iosmerchantId:"M0000509",
+	iosappkey:"H615PGHPL0R2S8RWJ0FSPMVEACQ6DNTH",
+	iosappiv:"H615PGHPL0R2S8RW",
+    merchantId:"M0000346",
     hdfctestReturnUrl : "https://test-node-api.tnpowerfinance.com/tnpfc/v1/processPGResponse", 
     hdfcprodReturnUrl : "https://portal-api.tnpowerfinance.com/tnpfc/v1/processPGResponse",
-    newurl :"https://www.tnpowerfinance.com/tnpfc-web/paymentpage?transactionId=", 
-    existurl :"https://www.tnpowerfinance.com/tnpfc-db/paymentpage?transactionId=",
+    newurl :"https://test.tnpowerfinance.com/tnpfc-web/paymentpage?transactionId=", 
+    existurl :"https://test.tnpowerfinance.com/tnpfc-db/paymentpage?transactionId=",
     BeneficiaryBank :"HDFC",
     IFSCCode: "HDFC0000082",
     NameofBeneficiaryAccount:"TAMILNADU POWER FIN AND INF DEV COR LTD",
     PaymentReference:"New FD",
     secretValue   :"FINCURO_API_TNPFC",  // this secret key is used for token generation 
-    username      :'Pallavim@amiainfotech.com', 
+    username      :'Pallavim@amiainfotech.com',
+    hash 		  :'968e4acc0bc24f5308b1f5e0d2d05a1511cee5a2d03f26ec70dc90b930b53673',	
     //hash          :'8537c38575a09969ff49dee3cabfe46dcc070db98b86bae94f9996e138b096b5',
-	hash          :'968e4acc0bc24f5308b1f5e0d2d05a1511cee5a2d03f26ec70dc90b930b53673', /* The hash key could be found under Help->All Documentation->Your hash key.*/
     sender        :'TNPFCL',
     responseMessage:"Bad request check request payload/parameters", // 400 bad request message
     //message:"Looks like you have a deposit with us. Please use Depositor Login.", // document verify message
@@ -40,8 +38,20 @@ module.exports = {
     technicalError:"Technical error. Please try again.",
     videoIdentification:"Video based Customer Identification Process will be initiated by TNPF.",
     panUrl:"http://test-pan-bot-elb-1259185693.ap-south-1.elb.amazonaws.com/verifyPAN?pan=",
-    aadhaarurl:"http://test-aadhar-bot-elb-1308754516.ap-south-1.elb.amazonaws.com/verifyAADHAR?aadhar=",
+    //aadhaarurl:"http://test-aadhar-bot-elb-1308754516.ap-south-1.elb.amazonaws.com/verifyAADHAR?aadhar=",
+	//aadhaarurl:"http://65.0.26.201:8000/verifyAADHAR?aadhar=",
+	//aadhaarurl:"http://aadharelb-1765314439.ap-south-1.elb.amazonaws.com/verifyAADHAR?aadhar=", --commented on 09032022
+	//aadhaarurl:"http://aadharelb-1765314439.ap-south-1.elb.amazonaws.com/verifyAADHAR?aadhar=", 
     qrUrl:"https://test-node-api.tnpowerfinance.com/tnpfc/v1/getQRData?fdId=",
-	NoRecords:"No Records Found"
-}
+    NoRecords:"No Records Found",
+	
+	CCAVE_WORKING_KEY: "9025F94575A359B7425699C69BC07B48",
+    //CCAVE_WORKING_KEY: "73A132F048B57198161364C787605E38",
+	CCAVE_ACCESS_CODE: "AVFV04JA11BL87VFLB",
+    //CCAVE_ACCESS_CODE:    "AVHT52IJ24BC56THCB",
+    CCAVE_MERCHANT_ID: 683248,
+    CCAVE_TEST_REDIRECT_URL : "https://test-node-api.tnpowerfinance.com/tnpfc/v1/processCCAveResponse",
+    CCAVE_TEST_STATUS_CHECKER_URL : "https://apitest.ccavenue.com/apis/servlet/DoWebTrans",
+    CCAVE_PROD_STATUS_CHECKER_URL : "https://api.ccavenue.com/apis/servlet/DoWebTrans"
+}    
        
