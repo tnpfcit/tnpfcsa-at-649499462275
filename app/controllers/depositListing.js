@@ -27,7 +27,7 @@ exports.depositList = (req, res) => {
     
     if(customerId && panNumber) {
         
-		var query = 'select "accountNumber" as "depositNumber","openDate" as "depositDate", "depositAmount" as "depositAmt",\ "annualInterest" as "interestAmt", FORMS_FILED_CNT as "noOfFormsFiled", AGGREGATE_AMT as "aggregateAmount" from \
+		var query = 'select "accountNumber" as "depositNumber","openDate" as "depositDate", "depositAmount" as "depositAmt",\ trunc("annualInterest",2) as "interestAmt", FORMS_FILED_CNT as "noOfFormsFiled", AGGREGATE_AMT as "aggregateAmount" from \
 		table (get_cust_fd_details(:customerId)) a join deposit_Acinfo b on a."accountNumber" = b.deposit_no\
 		join customer c on b.cust_id = c.cust_id  \
 		join table(get_form15_submit_details(:customerId)) d on b.cust_id = d.customer_id\
