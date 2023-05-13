@@ -44,7 +44,7 @@ exports.depositbank = (req,res) =>{
 				NEFT_ECS:'N',
 				STATUS:"CREATED",
 				STATUS_BY:"SYSUSER",
-				STATUS_DT:new Date(),
+				STATUS_DT:new Date()
 				}).save().then(results => {
 					return res.status(200).send({
                         "responseCode":sucessCode,
