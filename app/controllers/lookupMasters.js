@@ -77,7 +77,7 @@ exports.nonindividualAdrProof = (req,res,err) => {
         ${req.method}
     `);
     
-    var query = 'select lookup_ref_id "addressCode", lookup_desc "addressDesc" from lookup_master\
+    var query = 'select lookup_ref_id "addressProofDocCode", lookup_desc "addressProofDocName" from lookup_master\
                  where lookup_id = \'INTRO_DOCUMENT\' AND STATUS != \'DELETED\' AND AUTHORIZED = \'Y\'';
         
     db.sequelize.query(query,{type: sequelize.QueryTypes.SELECT}
