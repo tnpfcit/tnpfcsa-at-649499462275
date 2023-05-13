@@ -95,8 +95,8 @@ exports.nonIndividualCustomer = (req, res) => {
         ${req.protocol}
     `);
 	
-	if(depositAmount < 50000){
-		return res.status(500).send({"responseCode":"500","response":"Deposit Amount Should not be less than Rs 50000"});
+	if(depositAmount < 200000){
+		return res.status(500).send({"responseCode":"500","response":"Deposit Amount Should not be less than Rs. 2,00,000"});
 	}
 	
 	if (addProofurl instanceof Array) {
