@@ -5,13 +5,14 @@ var {username,hash,sender,responseMessage,sucessCode,resourceNotFoundcode,badReq
 
 
 function serviceMessage (depName,phNumber,service,ackId) {  
-
-   // var msg = urlencode('Dear '+depName+', Your Service Request No. '+ackId+' for '+service+' has been received by TN Power Finance for processing');
-    var msg1 = urlencode('Dear '+depName+', Your Service Request No: '+ackId+' for '+service+' has been successfully processed by TN Power Finance.');
-   // var data = 'username=' + username + '&hash=' + hash + '&sender=' + sender + '&numbers=' + phNumber + '&message=' + msg;
-    var data1 = 'username=' + username + '&hash=' + hash + '&sender=' + sender + '&numbers=' + phNumber + '&message=' + msg1;
-   // request.get("https://api.textlocal.in/send?"+ data, (error, response, body) => {});
-    request.get("https://api.textlocal.in/send?"+ data1, (error, response, body) => {});
+	var acklast7Digits = ackId.substr(3,8);
+	console.log("acklast7Digits=="+acklast7Digits);
+	var msg1 = urlencode('Dear '+depName+', Your Service Request No:ACK'+acklast7Digits+' for '+service+' has been successfully processed. -TNPFIDC');
+    var data = 'APIKey=6IBUmYiLRk659H5Blt03RQ&senderid=TNPFFD&channel=Trans&DCS=0&flashsms=0&number='+phNumber+'&text='+msg1+'&route=6';
+	//var data1 = 'username=' + username + '&hash=' + hash + '&sender=' + sender + '&numbers=' + phNumber + '&message=' + msg1;
+	request.get("http://182.18.143.11/api/mt/SendSMS?"+ data, (error, response, body) => {});
+    //request.get("https://api.textlocal.in/send?"+ data1, (error, response, body) => {});
 }                
+
 module.exports = serviceMessage;
 
