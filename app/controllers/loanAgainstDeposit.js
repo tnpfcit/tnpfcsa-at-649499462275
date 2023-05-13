@@ -69,17 +69,18 @@ var {username,hash,sender} = require('../config/env.js');
 							customerId: customerId
 						}, type: sequelize.QueryTypes.SELECT}
                     ).then(results =>{
-                        
-                        var acknowledgementId = ackId;
+                        let acklast7Digits = ackId.substr(3,8);
                         var phoneNumber = results[0].phoneNumber;
                         var depositorName = results[0].depositorName.length>16? results[0].depositorName.substring(0,16):results[0].depositorName;
-                        var msg = urlencode('Dear '+depositorName+', Your Service Request No. '+acknowledgementId+' for Loan has been received by TN Power Finance for processing');
-                        var data = 'username=' + username + '&hash=' + hash + '&sender=' + sender + '&numbers=' + phoneNumber + '&message=' + msg;
-						request("https://api.textlocal.in/send?"+ data, (error, response, body) => {});
+						//var msg = urlencode('Dear '+depositorName+', Service Request No.ACK'+acklast7Digits+' for Loan has been received for processing.-TNPFIDC');
+						//var data = 'APIKey=6IBUmYiLRk659H5Blt03RQ&senderid=TNPFFD&channel=Trans&DCS=0&flashsms=0&number='+phoneNumber+'&text='+msg+'&route=6';
+                        //var msg = urlencode('Dear '+depositorName+', Your Service Request No. '+acknowledgementId+' for Loan has been received for processing. - Tamil Nadu Power Finance (TNPF)');
+                        //var data = 'username=' + username + '&hash=' + hash + '&sender=' + sender + '&numbers=' + phoneNumber + '&message=' + msg;
+						//request("https://api.textlocal.in/send?"+ data, (error, response, body) => {}); - done on dec 16 tnpfc 2211
 						
                         return res.status(200).send({
 							"responseCode":200,
-							"response":{"acknowledgementId":acknowledgementId}
+							"response":{"acknowledgementId":ackId}
 						});
 
 					}).catch(err => {
