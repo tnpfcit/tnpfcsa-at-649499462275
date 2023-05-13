@@ -7,8 +7,8 @@ let {
     badRequestcode,
     responseMessage
 } = require('../config/env.js');
-exports.approving = (req,res,err) =>{
-	let { 
+exports.approving = (req,res,err) =>{    
+    let {         
         accountNumber,
         userId,
         remarks,
@@ -18,27 +18,28 @@ exports.approving = (req,res,err) =>{
         roleId,
         purpose,
         transDt
-    } = req.body;
+    } = req.body;    
     transDt = moment(transDt).format('DD-MMM-YYYY');
-	logger.info(`
+    logger.info(`        
         ${new Date()} || 
         ${req.originalUrl} || 
         ${JSON.stringify(req.body)} || 
         ${req.ip} || 
         ${req.protocol}
-    `);
-    if (accountNumber && userId && remarks && userStatus && batchId && transactionAmount && roleId && purpose && transDt){
-		db.sequelize.query('select API_MANAGEMENT_APPROVAL(:accountNumber,:userId,:remarks,:userStatus,:batchId,:transactionAmount,:roleId,:purpose,:transDt) as accountNumber from dual',
+    `);    
+    if (accountNumber && userId && remarks && userStatus && batchId && transactionAmount && roleId && purpose && transDt){        
+        db.sequelize.query('select API_MANAGEMENT_APPROVAL(:accountNumber,:userId,:remarks,:userStatus,:batchId,\
+            :transactionAmount,:roleId,:purpose,:transDt) as accountNumber from dual',
             {replacements: {
-				accountNumber: accountNumber, 
-				userId: userId, 
-				remarks: remarks, 
-				userStatus: userStatus, 
-				batchId: batchId, 
-				transactionAmount: transactionAmount,
-				roleId: roleId,
-				purpose: purpose, 
-				transDt: transDt},
+                accountNumber: accountNumber, 
+                userId: userId, 
+                remarks: remarks, 
+                userStatus: userStatus, 
+                batchId: batchId, 
+                transactionAmount: transactionAmount,
+                roleId: roleId,
+                purpose: purpose, 
+                transDt: transDt},
             type: sequelize.QueryTypes.SELECT}
         ).then(results => {
             logger.info("approved results"+JSON.stringify(results));
@@ -54,7 +55,7 @@ exports.approving = (req,res,err) =>{
             });
         });
     } else {
-		return res.status(400).send({
+        return res.status(400).send({
             "responseCode":badRequestcode,
             "response":responseMessage
         });
