@@ -26,10 +26,13 @@ exports.getTransactions = (req, res) => {
         getProdName(da.prod_id) as \"scheme\", fngetpandetails(da.cust_id) as \"panNumber\", dsa.deposit_dt as \"depositDt\",da.constitution as \"custType\", dsa.maturity_dt as \"maturityDt\",\
         dsa.DEPOSIT_PERIOD_MM || 'Months' as \"period\", dsa.rate_of_int as \"interestRate\",dsa.deposit_amt as \"depositAmt\", dsa.maturity_amt as \"maturityAmt\", dsa.tot_int_amt as \"totalIntAmt\"\
 		, CASE WHEN (SELECT COUNT(*) FROM TRANSFER_TRANS C WHERE a.batch_id=C.batch_id AND A.TRANS_DT=C.TRANS_DT AND C.TRANS_TYPE='CREDIT')>1 THEN 'The batch that you are approving/rejecting has multiple transactions ('|| \
-		(SELECT COUNT(*) FROM TRANSFER_TRANS C WHERE a.batch_id=C.batch_id AND A.TRANS_DT=C.TRANS_DT AND C.TRANS_TYPE='CREDIT') ||'). Ensure you have verified them before clicking the confirm button.' ELSE NULL END AS \"transAlert\"\
+		(SELECT COUNT(*) FROM TRANSFER_TRANS C WHERE a.batch_id=C.batch_id AND A.TRANS_DT=C.TRANS_DT AND C.TRANS_TYPE='CREDIT') ||'). Ensure you have verified them before clicking the confirm button.' ELSE NULL END AS \"transAlert\",\
+		CASE WHEN NVL(DSRD.SPECIAL_ROI,0) >0 THEN 'Y' ELSE 'N' END \"specialRoiFlag\", DSRD.SPECIAL_ROI as \"specialRoi\", DSRD.MATURITY_AMOUNT\ \"revisedMatAmt\", DSRD.TOTAL_INT_AMOUNT \"revisedTotIntAmt\", \
+		DSRD.PERIODIC_INT_AMOUNT REVISED_PERIODIC_INT_AMOUNT, DSRD.FILE_NAME \"roiDocUrl\"\
         from approval_master a join transfer_trans b on a.batch_id=b.batch_id and a.trans_dt = b.trans_dt\
         join deposit_acinfo da on a.act_num = da.deposit_no and da.authorize_status = 'APPROVAL_PENDING'\
         join deposit_sub_acinfo dsa on a.act_num = dsa.deposit_no and dsa.authorize_status = 'APPROVAL_PENDING'\
+		LEFT JOIN DEPOSIT_SPECIAL_ROI_DETAILS DSRD ON DSRD.DEPOSIT_NO=DA.DEPOSIT_NO AND DSRD.SCREEN_NAME='Deposit Opening/Renewal'\
         where a.purpose=:purpose AND A.remarks='DEP_OPEN' and a.gm_approval_req = 'Y' and a.gm_auth_status = 'P' and TRANS_TYPE = 'CREDIT'\
         union all\
         select substr(b.act_num,1,13) AS \"accountNo\", a.batch_id AS \"txnId\", a.trans_dt AS \"txnDate\", b.particulars AS \"txnDescription\", a.cmd_approval_req AS \"cmdApprovalReq\",\
@@ -39,11 +42,14 @@ exports.getTransactions = (req, res) => {
         getProdName(da.prod_id) as \"scheme\", fngetpandetails(da.cust_id) as \"panNumber\", dsa.deposit_dt as \"depositDt\",da.constitution as \"custType\", dsa.maturity_dt as \"maturityDt\",\
         dsa.DEPOSIT_PERIOD_MM || 'Months' as \"period\", dsa.rate_of_int as \"interestRate\",dsa.deposit_amt as \"depositAmt\", dsa.maturity_amt as \"maturityAmt\", dsa.tot_int_amt as \"totalIntAmt\"\
 		,CASE WHEN (SELECT COUNT(*) FROM TRANSFER_TRANS C WHERE a.batch_id=C.batch_id AND A.TRANS_DT=C.TRANS_DT AND C.TRANS_TYPE='CREDIT')>1 THEN 'The batch that you are approving/rejecting has multiple transactions ('|| \
-		(SELECT COUNT(*) FROM TRANSFER_TRANS C WHERE a.batch_id=C.batch_id AND A.TRANS_DT=C.TRANS_DT AND C.TRANS_TYPE='CREDIT') ||'). Ensure you have verified them before clicking the confirm button.' ELSE NULL END AS \"transAlert\"\
+		(SELECT COUNT(*) FROM TRANSFER_TRANS C WHERE a.batch_id=C.batch_id AND A.TRANS_DT=C.TRANS_DT AND C.TRANS_TYPE='CREDIT') ||'). Ensure you have verified them before clicking the confirm button.' ELSE NULL END AS \"transAlert\",\
+		CASE WHEN NVL(DSRD.SPECIAL_ROI,0) >0 THEN 'Y' ELSE 'N' END \"specialRoiFlag\", DSRD.SPECIAL_ROI as \"specialRoi\", DSRD.MATURITY_AMOUNT\ \"revisedMatAmt\", DSRD.TOTAL_INT_AMOUNT \"revisedTotIntAmt\", \
+		DSRD.PERIODIC_INT_AMOUNT REVISED_PERIODIC_INT_AMOUNT, DSRD.FILE_NAME \"roiDocUrl\"\
         from approval_master a join transfer_trans b on a.MULTIPLE_batch_id=b.link_batch_id and a.trans_dt=b.trans_dt and a.status!='DELETED' and b.status!='DELETED' and purpose=:purpose\
         and a.MULTIPLE_batch_id = b.link_batch_id and trans_type ='CREDIT' and remarks='MULTIPLE_OPEN' and b.amount = a.amount\
         join deposit_acinfo da on substr(b.act_num,1,13) = da.deposit_no and da.authorize_status = 'APPROVAL_PENDING' AND A.ACT_NUM=DA.DEPOSIT_NO\
         join deposit_sub_acinfo dsa on da.deposit_no = dsa.deposit_no and dsa.authorize_status = 'APPROVAL_PENDING'\
+		LEFT JOIN DEPOSIT_SPECIAL_ROI_DETAILS DSRD ON DSRD.DEPOSIT_NO=DA.DEPOSIT_NO AND DSRD.SCREEN_NAME='Deposit Opening/Renewal'\
         where a.purpose=:purpose and a.gm_auth_status = 'P' and a.gm_approval_req = 'Y' and TRANS_TYPE = 'CREDIT'";
 
     } else if (roleId == enums.RolesEnum.CMD && purpose == 'DEP_OPEN'){
@@ -55,10 +61,13 @@ exports.getTransactions = (req, res) => {
         getProdName(da.prod_id) as \"scheme\", fngetpandetails(da.cust_id) as \"panNumber\", dsa.deposit_dt as \"depositDt\",da.constitution as \"custType\", dsa.maturity_dt as \"maturityDt\",\
         dsa.DEPOSIT_PERIOD_MM || 'Months' as \"period\", dsa.rate_of_int as \"interestRate\",dsa.deposit_amt as \"depositAmt\", dsa.maturity_amt as \"maturityAmt\", dsa.tot_int_amt as \"totalIntAmt\"\
 		, CASE WHEN (SELECT COUNT(*) FROM TRANSFER_TRANS C WHERE a.batch_id=C.batch_id AND A.TRANS_DT=C.TRANS_DT AND C.TRANS_TYPE='CREDIT')>1 THEN 'The batch that you are approving/rejecting has multiple transactions ('|| \
-        (SELECT COUNT(*) FROM TRANSFER_TRANS C WHERE a.batch_id=C.batch_id AND A.TRANS_DT=C.TRANS_DT AND C.TRANS_TYPE='CREDIT') ||'). Ensure you have verified them before clicking the confirm button.' ELSE NULL END AS \"transAlert\" \
+        (SELECT COUNT(*) FROM TRANSFER_TRANS C WHERE a.batch_id=C.batch_id AND A.TRANS_DT=C.TRANS_DT AND C.TRANS_TYPE='CREDIT') ||'). Ensure you have verified them before clicking the confirm button.' ELSE NULL END AS \"transAlert\", \
+		CASE WHEN NVL(DSRD.SPECIAL_ROI,0) >0 THEN 'Y' ELSE 'N' END \"specialRoiFlag\", DSRD.SPECIAL_ROI as \"specialRoi\", DSRD.MATURITY_AMOUNT\ \"revisedMatAmt\", DSRD.TOTAL_INT_AMOUNT \"revisedTotIntAmt\", \
+		DSRD.PERIODIC_INT_AMOUNT REVISED_PERIODIC_INT_AMOUNT, DSRD.FILE_NAME \"roiDocUrl\"\
         from approval_master a join transfer_trans b on a.batch_id=b.batch_id and a.trans_dt = b.trans_dt\
         join deposit_acinfo da on a.act_num = da.deposit_no and da.authorize_status = 'APPROVAL_PENDING'\
         join deposit_sub_acinfo dsa on a.act_num = dsa.deposit_no and dsa.authorize_status = 'APPROVAL_PENDING'\
+		LEFT JOIN DEPOSIT_SPECIAL_ROI_DETAILS DSRD ON DSRD.DEPOSIT_NO=DA.DEPOSIT_NO AND DSRD.SCREEN_NAME='Deposit Opening/Renewal'\
         where a.purpose=:purpose and a.remarks = 'DEP_OPEN' and a.cmd_approval_req='Y' and NVL(a.gm_auth_status,'P')='A' and a.cmd_auth_status is null  and TRANS_TYPE = 'CREDIT'\
         union all\
         select substr(b.act_num,1,13) AS \"accountNo\", a.batch_id AS \"txnId\", a.trans_dt AS \"txnDate\", b.particulars AS \"txnDescription\", a.cmd_approval_req AS \"cmdApprovalReq\",\
@@ -68,11 +77,14 @@ exports.getTransactions = (req, res) => {
         getProdName(da.prod_id) as \"scheme\", fngetpandetails(da.cust_id) as \"panNumber\", dsa.deposit_dt as \"depositDt\",da.constitution as \"custType\", dsa.maturity_dt as \"maturityDt\",\
         dsa.DEPOSIT_PERIOD_MM || 'Months' as \"period\", dsa.rate_of_int as \"interestRate\",dsa.deposit_amt as \"depositAmt\", dsa.maturity_amt as \"maturityAmt\", dsa.tot_int_amt as \"totalIntAmt\"\
 		, CASE WHEN (SELECT COUNT(*) FROM TRANSFER_TRANS C WHERE a.batch_id=C.batch_id AND A.TRANS_DT=C.TRANS_DT AND C.TRANS_TYPE='CREDIT')>1 THEN 'The batch that you are approving/rejecting has multiple transactions ('|| \
-        (SELECT COUNT(*) FROM TRANSFER_TRANS C WHERE a.batch_id=C.batch_id AND A.TRANS_DT=C.TRANS_DT AND C.TRANS_TYPE='CREDIT') ||'). Ensure you have verified them before clicking the confirm button.' ELSE NULL END AS \"transAlert\" \
+        (SELECT COUNT(*) FROM TRANSFER_TRANS C WHERE a.batch_id=C.batch_id AND A.TRANS_DT=C.TRANS_DT AND C.TRANS_TYPE='CREDIT') ||'). Ensure you have verified them before clicking the confirm button.' ELSE NULL END AS \"transAlert\", \
+		CASE WHEN NVL(DSRD.SPECIAL_ROI,0) >0 THEN 'Y' ELSE 'N' END \"specialRoiFlag\", DSRD.SPECIAL_ROI as \"specialRoi\", DSRD.MATURITY_AMOUNT\ \"revisedMatAmt\", DSRD.TOTAL_INT_AMOUNT \"revisedTotIntAmt\", \
+		DSRD.PERIODIC_INT_AMOUNT REVISED_PERIODIC_INT_AMOUNT, DSRD.FILE_NAME \"roiDocUrl\"\
         from approval_master a join transfer_trans b on a.MULTIPLE_batch_id=b.link_batch_id and a.trans_dt=b.trans_dt and a.status!='DELETED' and b.status!='DELETED' and purpose=:purpose\
         and a.MULTIPLE_batch_id = b.link_batch_id and trans_type ='CREDIT' and remarks='MULTIPLE_OPEN' and b.amount = a.amount\
         join deposit_acinfo da on substr(b.act_num,1,13) = da.deposit_no and da.authorize_status = 'APPROVAL_PENDING' AND A.ACT_NUM=DA.DEPOSIT_NO\
         join deposit_sub_acinfo dsa on da.deposit_no = dsa.deposit_no and dsa.authorize_status = 'APPROVAL_PENDING'\
+		LEFT JOIN DEPOSIT_SPECIAL_ROI_DETAILS DSRD ON DSRD.DEPOSIT_NO=DA.DEPOSIT_NO AND DSRD.SCREEN_NAME='Deposit Opening/Renewal'\
         where a.purpose=:purpose and a.cmd_approval_req='Y' and NVL(a.gm_auth_status,'P')='A' and a.cmd_auth_status is null  and TRANS_TYPE = 'CREDIT'";
 	 
      }   else if (roleId == enums.RolesEnum.GM && purpose == 'SPECIAL_ROI'){      
@@ -116,7 +128,7 @@ exports.getTransactions = (req, res) => {
      A.GM_REMARKS AS \"gmRemarks\",  A.CMD_REMARKS AS \"cmdRemarks\", TRANS_TYPE AS \"transactionType\",DA.DEPOSIT_NO AS \"depositNumber\", GETCUSTNAME(DA.DEPOSIT_NO) AS \"custName\",\
      GETPRODNAME(DA.PROD_ID) AS \"scheme\", FNGETPANDETAILS(DA.CUST_ID) AS \"panNumber\", DSA.DEPOSIT_DT AS \"depositDt\",DA.CONSTITUTION AS \"custType\", DSA.MATURITY_DT AS \"maturityDt\",\
      DSA.DEPOSIT_PERIOD_MM || 'Months' AS \"period\", DSA.RATE_OF_INT AS \"interestRate\",DSA.DEPOSIT_AMT AS \"depositAmt\", DSA.MATURITY_AMT AS \"maturityAmt\", DSA.TOT_INT_AMT AS \"totalIntAmt\",\
-     NVL(DCD.DEP_NET_AMOUNT,0) AS \"closureAmt\",DCD.DEP_ROI AS \"closureROI\",NVL(DCD.DEP_INTEREST,0) AS \"intPaid\",NVL(DCD.DEP_TDS,0) AS \"tdsDeducted\",NVL(DCD.LOAN_NO,'-') AS \"loanAcctNumber\",\
+     NVL(DCD.DEP_NET_AMOUNT,0) AS \"closureAmt\",DCD.DEP_ROI AS \"closureROI\",NVL(DCD.DEP_INTEREST,0) AS \"intPaid\",NVL(DCD.DEP_TDS,0) +NVL(DCD.DEP_PENDING_TDS,0) AS \"tdsDeducted\",NVL(DCD.LOAN_NO,'-') AS \"loanAcctNumber\",\
      NVL(DCD.LOAN_NET_AMOUNT,0) AS \"loanAmount\",NVL(DCD.LOAN_INTEREST,0) AS \"loanIntAmount\", CASE WHEN DSA.FLEXI_STATUS ='PMW' THEN 'Pre Mature Withdrawal' WHEN DSA.FLEXI_STATUS ='MDC' THEN 'Maturity Date Closure'\
      WHEN DSA.FLEXI_STATUS ='PDC' THEN 'Advance Closure' ELSE 'Normal Closure' END AS \"closingType\"\
 	 , CASE WHEN (SELECT COUNT(*) FROM TRANSFER_TRANS C WHERE a.batch_id=C.batch_id AND A.TRANS_DT=C.TRANS_DT AND C.TRANS_TYPE='DEBIT')>1 THEN \
@@ -126,7 +138,7 @@ exports.getTransactions = (req, res) => {
      JOIN DEPOSIT_ACINFO DA ON A.ACT_NUM = DA.DEPOSIT_NO AND DA.AUTHORIZE_STATUS = 'APPROVAL_PENDING'\
      JOIN DEPOSIT_SUB_ACINFO DSA ON A.ACT_NUM = DSA.DEPOSIT_NO AND DSA.AUTHORIZE_STATUS = 'APPROVAL_PENDING'\
      JOIN DEPOSIT_CLOSING_DETAILS DCD ON A.ACT_NUM = DCD.DEPOSIT_NO \
-     AND A.STATUS!='DELETED' AND B.STATUS!='DELETED'  AND B.ACT_NUM IS NOT NULL\
+     AND A.STATUS!='DELETED' AND B.STATUS!='DELETED'  AND B.ACT_NUM IS NOT NULL AND FROM_SCREEN !='MATURITY_TASK'\
      WHERE A.PURPOSE=:purpose AND A.GM_AUTH_STATUS = 'P' AND A.GM_APPROVAL_REQ = 'Y' AND TRANS_TYPE = 'DEBIT'\
 	 UNION ALL\
 	 SELECT B.TRANS_ID,SUBSTR(B.ACT_NUM,1,13) AS \"accountNo\", A.BATCH_ID AS \"txnId\", B.TRANS_DT AS \"txnDate\", B.PARTICULARS AS \"txnDescription\", A.CMD_APPROVAL_REQ AS \"cmdApprovalReq\",\
@@ -135,7 +147,7 @@ exports.getTransactions = (req, res) => {
      A.GM_REMARKS AS \"gmRemarks\",  A.CMD_REMARKS AS \"cmdRemarks\", TRANS_TYPE AS \"transactionType\",DA.DEPOSIT_NO AS \"depositNumber\", GETCUSTNAME(DA.DEPOSIT_NO) AS \"custName\",\
      GETPRODNAME(DA.PROD_ID) AS \"scheme\", FNGETPANDETAILS(DA.CUST_ID) AS \"panNumber\", DSA.DEPOSIT_DT AS \"depositDt\",DA.CONSTITUTION AS \"custType\", DSA.MATURITY_DT AS \"maturityDt\",\
      DSA.DEPOSIT_PERIOD_MM || 'Months' AS \"period\", DSA.RATE_OF_INT AS \"interestRate\",DSA.DEPOSIT_AMT AS \"depositAmt\", DSA.MATURITY_AMT AS \"maturityAmt\", DSA.TOT_INT_AMT AS \"totalIntAmt\",\
-     NVL(DCD.DEP_NET_AMOUNT,0) AS \"closureAmt\",DCD.DEP_ROI AS \"closureROI\",NVL(DCD.DEP_INTEREST,0) AS \"intPaid\",NVL(DCD.DEP_TDS,0) AS \"tdsDeducted\",NVL(DCD.LOAN_NO,'-') AS \"loanAcctNumber\",\
+     NVL(DCD.DEP_NET_AMOUNT,0) AS \"closureAmt\",DCD.DEP_ROI AS \"closureROI\",NVL(DCD.DEP_INTEREST,0) AS \"intPaid\",NVL(DCD.DEP_TDS,0) +NVL(DCD.DEP_PENDING_TDS,0) AS \"tdsDeducted\",NVL(DCD.LOAN_NO,'-') AS \"loanAcctNumber\",\
      NVL(DCD.LOAN_NET_AMOUNT,0) AS \"loanAmount\",NVL(DCD.LOAN_INTEREST,0) AS \"loanIntAmount\", CASE WHEN DSA.FLEXI_STATUS ='PMW' THEN 'Pre Mature Withdrawal' WHEN DSA.FLEXI_STATUS ='MDC' THEN 'Maturity Date Closure'\
      WHEN DSA.FLEXI_STATUS ='PDC' THEN 'Advance Closure' ELSE 'Normal Closure' END AS \"closingType\"\
 	 , CASE WHEN (SELECT COUNT(*) FROM TRANSFER_TRANS C WHERE a.batch_id=C.batch_id AND A.TRANS_DT=C.TRANS_DT AND C.TRANS_TYPE='DEBIT')>1 THEN \
@@ -144,7 +156,7 @@ exports.getTransactions = (req, res) => {
      FROM APPROVAL_MASTER A, ADVANCE_TRANSFER_TRANS B, DEPOSIT_ACINFO DA,DEPOSIT_SUB_ACINFO DSA, DEPOSIT_CLOSING_DETAILS DCD \
      WHERE DA.DEPOSIT_NO = DSA.DEPOSIT_NO AND A.BATCH_ID=B.BATCH_ID \
      AND DSA.MATURITY_DT=B.TRANS_DT AND DA.DEPOSIT_NO = SUBSTR(B.LINK_BATCH_ID,1,13)\
-     AND A.STATUS!='DELETED' AND B.STATUS!='DELETED'  AND DA.AUTHORIZE_STATUS='APPROVAL_PENDING' AND B.ACT_NUM IS NOT NULL\
+     AND A.STATUS!='DELETED' AND B.STATUS!='DELETED'  AND DA.AUTHORIZE_STATUS='APPROVAL_PENDING' AND B.ACT_NUM IS NOT NULL AND FROM_SCREEN !='MATURITY_TASK'\
      AND A.ACT_NUM = DCD.DEPOSIT_NO AND PURPOSE=:purpose AND TRANS_TYPE='DEBIT' AND A.GM_APPROVAL_REQ = 'Y' AND GM_AUTH_STATUS = 'P' \
      AND B.TRANS_TYPE = 'DEBIT'";
 	 
@@ -186,7 +198,7 @@ exports.getTransactions = (req, res) => {
      A.GM_REMARKS AS \"gmRemarks\",  A.CMD_REMARKS AS \"cmdRemarks\", TRANS_TYPE AS \"transactionType\",DA.DEPOSIT_NO AS \"depositNumber\", GETCUSTNAME(DA.DEPOSIT_NO) AS \"custName\",\
      GETPRODNAME(DA.PROD_ID) AS \"scheme\", FNGETPANDETAILS(DA.CUST_ID) AS \"panNumber\", DSA.DEPOSIT_DT AS \"depositDt\",DA.CONSTITUTION AS \"custType\", DSA.MATURITY_DT AS \"maturityDt\",\
      DSA.DEPOSIT_PERIOD_MM || 'Months' AS \"period\", DSA.RATE_OF_INT AS \"interestRate\",DSA.DEPOSIT_AMT AS \"depositAmt\", DSA.MATURITY_AMT AS \"maturityAmt\", DSA.TOT_INT_AMT AS \"totalIntAmt\",\
-     NVL(DCD.DEP_NET_AMOUNT,0) AS \"closureAmt\",DCD.DEP_ROI AS \"closureROI\",NVL(DCD.DEP_INTEREST,0) AS \"intPaid\",NVL(DCD.DEP_TDS,0) AS \"tdsDeducted\",NVL(DCD.LOAN_NO,'-') AS \"loanAcctNumber\",\
+     NVL(DCD.DEP_NET_AMOUNT,0) AS \"closureAmt\",DCD.DEP_ROI AS \"closureROI\",NVL(DCD.DEP_INTEREST,0) AS \"intPaid\",NVL(DCD.DEP_TDS,0) +NVL(DCD.DEP_PENDING_TDS,0) AS \"tdsDeducted\",NVL(DCD.LOAN_NO,'-') AS \"loanAcctNumber\",\
      NVL(DCD.LOAN_NET_AMOUNT,0) AS \"loanAmount\",NVL(DCD.LOAN_INTEREST,0) AS \"loanIntAmount\", CASE WHEN DSA.FLEXI_STATUS ='PMW' THEN 'Pre Mature Withdrawal' WHEN DSA.FLEXI_STATUS ='MDC' THEN 'Maturity Date Closure'\
      WHEN DSA.FLEXI_STATUS ='PDC' THEN 'Advance Closure' ELSE 'Normal Closure' END AS \"closingType\"\
 	 , CASE WHEN (SELECT COUNT(*) FROM TRANSFER_TRANS C WHERE a.batch_id=C.batch_id AND A.TRANS_DT=C.TRANS_DT AND C.TRANS_TYPE='DEBIT')>1 THEN 'The batch that you are approving/rejecting has multiple transactions ('|| \
@@ -194,7 +206,7 @@ exports.getTransactions = (req, res) => {
      FROM APPROVAL_MASTER A JOIN TRANSFER_TRANS B ON A.BATCH_ID=B.BATCH_ID AND A.TRANS_DT = B.TRANS_DT\
      JOIN DEPOSIT_ACINFO DA ON A.ACT_NUM = DA.DEPOSIT_NO AND DA.AUTHORIZE_STATUS = 'APPROVAL_PENDING'\
      JOIN DEPOSIT_SUB_ACINFO DSA ON A.ACT_NUM = DSA.DEPOSIT_NO AND DSA.AUTHORIZE_STATUS = 'APPROVAL_PENDING'\
-     JOIN DEPOSIT_CLOSING_DETAILS DCD ON A.ACT_NUM = DCD.DEPOSIT_NO \
+     JOIN DEPOSIT_CLOSING_DETAILS DCD ON A.ACT_NUM = DCD.DEPOSIT_NO AND FROM_SCREEN !='MATURITY_TASK'\
      AND A.STATUS!='DELETED' AND B.STATUS!='DELETED'  AND B.ACT_NUM IS NOT NULL\
      WHERE A.PURPOSE=:purpose and a.cmd_approval_req='Y' and NVL(a.gm_auth_status,'P')='A' and a.cmd_auth_status is null  and TRANS_TYPE = 'DEBIT'\
 	 UNION ALL\
@@ -204,7 +216,7 @@ exports.getTransactions = (req, res) => {
      A.GM_REMARKS AS \"gmRemarks\",  A.CMD_REMARKS AS \"cmdRemarks\", TRANS_TYPE AS \"transactionType\",DA.DEPOSIT_NO AS \"depositNumber\", GETCUSTNAME(DA.DEPOSIT_NO) AS \"custName\",\
      GETPRODNAME(DA.PROD_ID) AS \"scheme\", FNGETPANDETAILS(DA.CUST_ID) AS \"panNumber\", DSA.DEPOSIT_DT AS \"depositDt\",DA.CONSTITUTION AS \"custType\", DSA.MATURITY_DT AS \"maturityDt\",\
      DSA.DEPOSIT_PERIOD_MM || 'Months' AS \"period\", DSA.RATE_OF_INT AS \"interestRate\",DSA.DEPOSIT_AMT AS \"depositAmt\", DSA.MATURITY_AMT AS \"maturityAmt\", DSA.TOT_INT_AMT AS \"totalIntAmt\",\
-     NVL(DCD.DEP_NET_AMOUNT,0) AS \"closureAmt\",DCD.DEP_ROI AS \"closureROI\",NVL(DCD.DEP_INTEREST,0) AS \"intPaid\",NVL(DCD.DEP_TDS,0) AS \"tdsDeducted\",NVL(DCD.LOAN_NO,'-') AS \"loanAcctNumber\",\
+     NVL(DCD.DEP_NET_AMOUNT,0) AS \"closureAmt\",DCD.DEP_ROI AS \"closureROI\",NVL(DCD.DEP_INTEREST,0) AS \"intPaid\",NVL(DCD.DEP_TDS,0) +NVL(DCD.DEP_PENDING_TDS,0) AS \"tdsDeducted\",NVL(DCD.LOAN_NO,'-') AS \"loanAcctNumber\",\
      NVL(DCD.LOAN_NET_AMOUNT,0) AS \"loanAmount\",NVL(DCD.LOAN_INTEREST,0) AS \"loanIntAmount\", CASE WHEN DSA.FLEXI_STATUS ='PMW' THEN 'Pre Mature Withdrawal' WHEN DSA.FLEXI_STATUS ='MDC' THEN 'Maturity Date Closure'\
      WHEN DSA.FLEXI_STATUS ='PDC' THEN 'Advance Closure' ELSE 'Normal Closure' END AS \"closingType\"\
 	 , CASE WHEN (SELECT COUNT(*) FROM TRANSFER_TRANS C WHERE a.batch_id=C.batch_id AND A.TRANS_DT=C.TRANS_DT AND C.TRANS_TYPE='DEBIT')>1 THEN 'The batch that you are approving/rejecting has multiple transactions ('|| \
@@ -212,7 +224,7 @@ exports.getTransactions = (req, res) => {
      FROM APPROVAL_MASTER A, ADVANCE_TRANSFER_TRANS B, DEPOSIT_ACINFO DA,DEPOSIT_SUB_ACINFO DSA, DEPOSIT_CLOSING_DETAILS DCD \
      WHERE DA.DEPOSIT_NO = DSA.DEPOSIT_NO AND A.BATCH_ID=B.BATCH_ID \
      AND DSA.MATURITY_DT=B.TRANS_DT AND DA.DEPOSIT_NO = SUBSTR(B.LINK_BATCH_ID,1,13)\
-     AND A.STATUS!='DELETED' AND B.STATUS!='DELETED'  AND DA.AUTHORIZE_STATUS='APPROVAL_PENDING' AND B.ACT_NUM IS NOT NULL\
+     AND A.STATUS!='DELETED' AND B.STATUS!='DELETED'  AND DA.AUTHORIZE_STATUS='APPROVAL_PENDING' AND B.ACT_NUM IS NOT NULL AND FROM_SCREEN !='MATURITY_TASK'\
      AND A.ACT_NUM = DCD.DEPOSIT_NO AND PURPOSE=:purpose AND TRANS_TYPE='DEBIT' and a.cmd_approval_req='Y' and NVL(a.gm_auth_status,'P')='A' and a.cmd_auth_status is null";
 	 
       //  query = "select substr(b.act_num,1,13) AS \"accountNo\", a.batch_id AS \"txnId\", a.trans_dt AS \"txnDate\", b.particulars AS \"txnDescription\", a.cmd_approval_req AS \"cmdApprovalReq\",\
@@ -311,7 +323,7 @@ exports.getTransactions = (req, res) => {
         b.authorize_by  \"checker\", b.authorize_dt \"checkerDate\", a.gm_timestamp \"gmAuthDate\",  a.cmd_timestamp \"cmdAuthDate\", b.narration \"narration\", a.gm_remarks \"gmRemarks\",  a.cmd_remarks \"cmdRemarks\"\
 		, CASE WHEN (SELECT COUNT(*) FROM TRANSFER_TRANS C WHERE a.batch_id=C.batch_id AND A.TRANS_DT=C.TRANS_DT AND C.TRANS_TYPE='DEBIT')>1 THEN 'The batch that you are approving/rejecting has multiple transactions ('|| \
 		(SELECT COUNT(*) FROM TRANSFER_TRANS C WHERE a.batch_id=C.batch_id AND A.TRANS_DT=C.TRANS_DT AND C.TRANS_TYPE='DEBIT') ||'). Ensure you have verified them before clicking the confirm button' ELSE NULL END AS \"transAlert\" \
-        from approval_master a, transfer_trans b where a.batch_id=b.batch_id and purpose=:purpose and gm_auth_status = 'P' and a.gm_approval_req = 'Y' and b.AUTHORIZE_STATUS = 'APPROVAL_PENDING' AND b.trans_type = 'DEBIT' AND A.TRANS_DT = B.TRANS_DT";
+        from approval_master a, transfer_trans b where a.batch_id=b.batch_id and purpose=:purpose and gm_auth_status = 'P' and a.gm_approval_req = 'Y' and b.AUTHORIZE_STATUS = 'APPROVAL_PENDING' AND b.trans_type = 'DEBIT' AND A.TRANS_DT = B.TRANS_DT AND A.TRANS_dT = (select curr_appl_dt from day_end)";
 
     } else if (roleId == enums.RolesEnum.CMD && purpose =='TRANSFER'){
         
@@ -320,7 +332,7 @@ exports.getTransactions = (req, res) => {
         b.authorize_by  \"checker\", b.authorize_dt \"checkerDate\", a.gm_timestamp \"gmAuthDate\",  a.cmd_timestamp \"cmdAuthDate\", b.narration \"narration\", a.gm_remarks \"gmRemarks\",  a.cmd_remarks \"cmdRemarks\"\
 		, CASE WHEN (SELECT COUNT(*) FROM TRANSFER_TRANS C WHERE a.batch_id=C.batch_id AND A.TRANS_DT=C.TRANS_DT AND C.TRANS_TYPE='DEBIT')>1 THEN 'The batch that you are approving/rejecting has multiple transactions ('|| \
 		(SELECT COUNT(*) FROM TRANSFER_TRANS C WHERE a.batch_id=C.batch_id AND A.TRANS_DT=C.TRANS_DT AND C.TRANS_TYPE='DEBIT') ||'). Ensure you have verified them before clicking the confirm button.' ELSE NULL END AS \"transAlert\" \
-        from approval_master a, transfer_trans b  where a.batch_id=b.batch_id and purpose=:purpose and cmd_approval_req='Y' and nvl(gm_auth_status,'P')='A' and cmd_auth_status is null and b.AUTHORIZE_STATUS = 'APPROVAL_PENDING' AND TRANS_TYPE = 'DEBIT' AND A.TRANS_DT = B.TRANS_DT";
+        from approval_master a, transfer_trans b  where a.batch_id=b.batch_id and purpose=:purpose and cmd_approval_req='Y' and nvl(gm_auth_status,'P')='A' and cmd_auth_status is null and b.AUTHORIZE_STATUS = 'APPROVAL_PENDING' AND TRANS_TYPE = 'DEBIT' AND A.TRANS_DT = B.TRANS_DT AND A.TRANS_dT = (select curr_appl_dt from day_end)";
     
     } else if (roleId == enums.RolesEnum.GM && purpose =='DEP_RENEW'){
 		
