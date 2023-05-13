@@ -24,10 +24,10 @@ exports.customerFYIntDetails = (req,res) =>{
 
    
    if(customerId){	   
-		var query='select SUBSTR(TO_CHAR(GETFINANCIALSTARTDT(INT_PAID_DATE),\'dd-mm-yyyy\'),7,4)||\'-\'||\
-		SUBSTR(to_char(GETFINANCIALENDDT(INT_PAID_DATE),\'dd-mm-yyyy\'),7,4)"financialYear", ROUND(SUM(INT_AMT),0) "intTotal",ROUND(SUM(TDS_AMT),0) "tdsTotal"\
-		from DEPOSIT_INTEREST A  LEFT JOIN NEFT_ECS_FILE_CREATION B ON SUBSTR(A.ACT_NUM,1,13) = B.ACCT_NUM  AND A.INT_PAID_DATE = TRANS_DT\
-		where CUST_ID =:customerId and PAID_INT = \'CREDIT\' AND (TRANS_LOG_ID IS NULL OR TRANS_LOG_ID NOT IN (\'PRE_CLOSE_RECEIVABLE\',\'DEATH_CLOSE_RECEIVABLE\',\'REC_FROM_CUSTOMER\'))GROUP BY\ SUBSTR(TO_CHAR(GETFINANCIALSTARTDT(INT_PAID_DATE),\'dd-mm-yyyy\'),7,4)||\'-\'||SUBSTR(TO_CHAR(GETFINANCIALENDDT(INT_PAID_dATE),\'dd-mm-yyyy\'),7,4) ORDER BY 1 DESC';
+		var query='select substr(to_char(GETFINANCIALstartdt(int_paid_date),\'dd-mm-yyyy\'),7,4)||\'-\'||\
+		substr(to_char(GETFINANCIALENDDT(int_paid_date),\'dd-mm-yyyy\'),7,4)"financialYear", ROUND(sum(int_amt),0) "intTotal",ROUND(sum(tds_amt),0) "tdsTotal"\
+		from deposit_interest A  LEFT JOIN NEFT_eCS_FILE_CREATION B ON SUBSTR(A.ACT_NUM,1,13) = B.ACCT_NUM  AND A.INT_PAID_DATE = TRANS_DT\
+		where cust_id =:customerId and paid_int = \'CREDIT\' AND (TRANS_LOG_ID IS NULL OR TRANS_LOG_ID NOT IN (\'PRE_CLOSE_RECEIVABLE\',\'DEATH_CLOSE_RECEIVABLE\',\'REC_FROM_CUSTOMER\'))group by\ substr(to_char(GETFINANCIALstartdt(int_paid_date),\'dd-mm-yyyy\'),7,4)||\'-\'||substr(to_char(GETFINANCIALENDDT(int_paid_date),\'dd-mm-yyyy\'),7,4) ORDER BY 1 DESC';
 	   
 		db.sequelize.query(query,{replacements: {customerId: customerId}, type: sequelize.QueryTypes.SELECT}
       ).then(results=>{
