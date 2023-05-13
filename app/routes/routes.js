@@ -63,6 +63,7 @@ module.exports = function(app){
 	require('./authSignatoryDetails.js')(app);
 	require('./depositListing.js')(app);
 	require('./customerProfile.js')(app);
+	require('./powerbiMenu.js')(app);
 	require('./form16A.js')(app);
 	
 }
