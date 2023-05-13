@@ -17,6 +17,9 @@ exports.paymentResponse = (req, res, err) => {
 	var appkey = "SBN59A2O0WBZLULJSBN59A2O0WBZLULJ";
     var appiv = "SBN59A2O0WBZLULJ";
     var appmerchantId = "M00035";
+	var iosappkey="rC2sB0pl2UY4Zb0TR0cC6EH7Um5QF6ek";
+	var iosappiv="rC2sB0pl2UY4Zb0T";
+	var iosmerchantid ="M00093";
 	
     var responseData = req.body.respData;
     var id = req.body.merchantId;
@@ -34,6 +37,10 @@ exports.paymentResponse = (req, res, err) => {
             logger.info("this is mobile application api keys is used for decryption ========");
             key = appkey;
             iv = appiv;
+        }else if (id == iosmerchantid)
+        {
+			key = iosappkey;
+            iv = iosappiv;
         }
     // code for decrypting
         let decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
