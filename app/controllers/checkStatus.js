@@ -12,7 +12,7 @@ let {
 exports.chequeInformation = (req,res) => {
 
     let {panNumber,chequeNumber,bankId} = req.body;
-	panNumber = panNumber.toUpperCase();
+    panNumber = panNumber.toUpperCase();
 
     logger.info(`
         ${new Date()} || 
