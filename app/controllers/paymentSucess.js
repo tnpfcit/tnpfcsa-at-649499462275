@@ -79,9 +79,11 @@ exports.paySucess = (req, res) => {
                     //console.log(uploadedDocUrl);
                     document.update({ PAYMENT_ADVICE_URL:uploadedDocUrl},{where: {TRANSACTION_ID:transactionId}}
                     ).then(results =>{
-                        var msg = urlencode('Dear '+firstName+', You have generated RTGS/NEFT payment advice for new fixed deposit request with transaction ID '+transactionId+'. TNPFCL will issue Fixed Deposit confirmation receipt on realisation of payment as per payment advice generated.');
-                        var data = 'username=' + username + '&hash=' + hash + '&sender=' + sender + '&numbers=' + phoneNumber + '&message=' + msg;
-                        request("https://api.textlocal.in/send?"+ data, (error, response, body) => {});
+                        var msg = urlencode('Dear '+firstName+', You have generated RTGS/NEFT payment advice for new fixed deposit request with transaction ID '+transactionId+'. TNPFCL will issue Fixed Deposit confirmation receipt on realisation of payment as per payment advice generated. -Tamil Nadu Power Finance (TNPF)');
+                        //var data = 'username=' + username + '&hash=' + hash + '&sender=' + sender + '&numbers=' + phoneNumber + '&message=' + msg;
+						var data = 'APIKey=6IBUmYiLRk659H5Blt03RQ&senderid=TNPFFD&channel=Trans&DCS=0&flashsms=0&number='+phoneNumber+'&text='+msg+'&route=6';
+                        //request("https://api.textlocal.in/send?"+ data, (error, response, body) => {});
+						request.get("http://182.18.143.11/api/mt/SendSMS?"+ data, (error, response, body) => {});
                         return res.status(200).send({
                             "responseCode": 200,
                             "paymentType": paymentType, "scheme": productId, "period": period, "interestRate": rateOfInterest, "frequency": interestPayment,
@@ -124,9 +126,11 @@ exports.paySucess = (req, res) => {
                 ).then(results => {
 					logger.info(JSON.stringify(results));
 					if(results.length > 0){
-						var msg = urlencode('Dear '+firstName+', We have received payment of Rs. '+depositAmount+' towards new fixed deposit creation with transaction ID '+transactionId);
-						var data = 'username=' + username + '&hash=' + hash + '&sender=' + sender + '&numbers=' + phoneNumber + '&message=' + msg;
-						request("https://api.textlocal.in/send?"+ data, (error, response, body) => {});
+						var msg = urlencode('Dear '+firstName+',Received payment of Rs. '+depositAmount+' towards new FD creation with transaction ID '+transactionId+'.-TNPFIDC');
+						//var data = 'username=' + username + '&hash=' + hash + '&sender=' + sender + '&numbers=' + phoneNumber + '&message=' + msg;
+						var data = 'APIKey=6IBUmYiLRk659H5Blt03RQ&senderid=TNPFFD&channel=Trans&DCS=0&flashsms=0&number='+phoneNumber+'&text='+msg+'&route=6';
+						//request("https://api.textlocal.in/send?"+ data, (error, response, body) => {});
+						request.get("http://182.18.143.11/api/mt/SendSMS?"+ data, (error, response, body) => {});
 						return res.status(200).send({
                         "responseCode": 200, "paymentType": paymentType, "productId": productId, "customerId": customerId, "period": period,
                         "categoryId": categoryId, "interestPayment": interestPayment, "rateOfInterest": rateOfInterest, "depositNumber": depositNumber, "response": results
