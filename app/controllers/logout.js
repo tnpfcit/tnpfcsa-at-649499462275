@@ -12,6 +12,15 @@ const logger = require('../config/logger.js');
 
 exports.logout = (req,res) => {
     var {customerId,channel} = req.body;
+    
+    logger.info(`
+        ${new Date()} || 
+        ${req.originalUrl} || 
+        ${JSON.stringify(req.body)} || 
+        ${req.ip} || 
+        ${req.protocol} || 
+        ${req.method}
+    `);
         if(customerId){
             var query = 'select decode (c.cust_type,\'INDIVIDUAL\',c.fname,c.comp_name) as "depositorName",cp.phone_number from customer c join cust_phone cp on c.cust_id = cp.cust_id where c.cust_id =:customerId';
             db.sequelize.query(query,{replacements:{customerId:customerId},type: sequelize.QueryTypes.SELECT}
@@ -28,7 +37,7 @@ exports.logout = (req,res) => {
                             var msg = urlencode('Dear '+depName+', You have logged-out of TNPF Web Portal for Depositors on '+currDate+' For any issues contact our 24x7 interactive voice response system phone number 044-46312345');
                         }
                         var data = 'username=' + username + '&hash=' + hash + '&sender=' + sender + '&numbers=' + phNumber + '&message=' + msg;
-                        request.get("https://api.textlocal.in/send?"+ data, (error, response, body) => {}); - done on dec 16 tnpfc 2211*/
+                        request.get("https://api.textlocal.in/send?"+ data, (error, response, body) => {}); -- done on dec 16 tnpfc 2211*/
                         return res.status(200).send({
                             "responseCode":sucessCode,
                             "response":"You are Sucessfully Logged Out"
