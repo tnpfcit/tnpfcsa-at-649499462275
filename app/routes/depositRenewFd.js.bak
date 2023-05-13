@@ -1,6 +1,0 @@
-module.exports = function(app) {
-	   
-    const depositRenewFd = require('../controllers/depositRenewFd.js');
-	const depositRenewFdValidation = require('../middleware/depositRenewFdValidation.js');
-    app.post('/tnpfc/v1/depositRenewFd',depositRenewFdValidation.validates('depositRenewFd'),depositRenewFd.depositRenewFd);
-}
