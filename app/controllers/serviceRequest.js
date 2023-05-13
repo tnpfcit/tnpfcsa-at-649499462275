@@ -120,10 +120,9 @@ exports.serviceRequest = (req, res) => {
 	
 	if (depositNo instanceof Array) {
 		depositNo = depositNo.map(element => element.depositNo).toString();
-		depositNo = depositNo.replace(/\,/g, "|");
-		
+		depositNo = depositNo.replace(/\,/g, "|");		
 	}
-	
+	console.log("deposit_no======"+depositNo);
 	
 	
 	//code added to handle address proof url in service request TW-816 - 12/oct/2021 - karthi
@@ -178,7 +177,7 @@ exports.serviceRequest = (req, res) => {
                             }); 
                         });
 
-            } else if (serviceType == "bankDetailsChange" && depositNumber && customerId && bankName && ifscCode && accountNumber && accountHolderName && imagePath){
+            } else if (serviceType == "bankDetailsChange" && depositNumber && customerId && bankName && ifscCode && accountNumber && accountHolderName){
 
                         db.sequelize.query('select API_WEBPORTAL_OTHER_BANK (:serviceType, :depositNumber, :customerId, :bankName,\
                             :ifscCode, :accountNumber, :accountHolderName, :imagePath, :channelId, :agentId) as ACK_ID from dual',
@@ -275,7 +274,7 @@ exports.serviceRequest = (req, res) => {
                             var ackId = results[0].ACK_ID;
 							console.log("ack_id===="+ackId);
 							if (ackId) {
-								var query = 'select count(*) cnt from web_portal_g where acknwldge_id =:ackId';
+								var query = 'select nvl(count(*),0) cnt from web_portal_g where acknwldge_id =:ackId';
 								db.sequelize.query(query,{replacements:{ackId:ackId},type:sequelize.QueryTypes.SELECT}
 								).then(results1 => {
 									console.log("inside results");
