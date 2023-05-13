@@ -65,5 +65,9 @@ module.exports = function(app){
 	require('./customerProfile.js')(app);
 	require('./powerbiMenu.js')(app);
 	require('./form16A.js')(app);
-	
+	require('./customerSearchNew.js')(app);	
+	require('./customerFdDetails.js')(app);	
+	require('./customerFdSummary.js')(app);	
+	require('./customerInterestDetails.js')(app);
+	require('./customerFyIntDetails.js')(app);	
 }
