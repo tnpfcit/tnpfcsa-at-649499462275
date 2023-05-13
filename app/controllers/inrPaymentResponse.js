@@ -49,12 +49,12 @@ exports.neftResponse = (req,res,err) => {
 					logger.info("bankRefId"+' '+bankRefId+' '+"transactionId"+' '+transactionId);
 					logger.info("transId"+' '+transId+' '+"virtualAccount"+' '+virtualAccount);
 					return res.status(200).send({"transactionId":transactionId,"code":300,"status":"Duplicate"});
-				} else if( diffDays > 7) {
+				} else if( diffDays > 2) {
 					console.log("inside day condition check");
 					return res.status(200).send({"transactionId":transactionId,"code":400,"status":"Payment window for this virtual account number is expired"});
-				} else if(amount < 50000) {
+				} else if(amount < 200000) {
 					logger.info("inside amount condition check");
-					return res.status(200).send({"transactionId":transactionId,"code":400,"status":"Transaction Rejected. Minimum acceptable payment amount is Rs. 50,000."});
+					return res.status(200).send({"transactionId":transactionId,"code":400,"status":"Transaction Rejected. Minimum acceptable payment amount is Rs. 2,00,000."});
 				} else if (utrNumber == null && bankRefId == null && txnDateTime == null && fmsRefId == null){
 					logger.info("insdide null check. Calling db function");
 					db.sequelize.query('select api_rtgs_neft_payment_details(:transactionId,:customerId,:productId,:period,:interestPayment,:depositAmount,\
