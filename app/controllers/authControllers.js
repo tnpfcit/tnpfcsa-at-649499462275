@@ -24,9 +24,9 @@ exports.azureAuthentication = (req, res) => {
 	var rollName = null;
     // context.acquireTokenWithRefreshToken()
     // password grant.
-    if (grantType == "password") {
+    if (grantType == "password") {		
         context.acquireTokenWithUsernamePassword(config.resource, username, password, config.clientId, function (err, response) {
-            if (err) {
+            if (err) {				
                 return res.status(401).send({ "data": null, "message": "Invalid credentials" });
             } else {
                 // fetching user details from DB.
@@ -102,12 +102,12 @@ exports.verifyToken = (req, res, next) => {
 
     var authorization = req.headers['authorization'];
     if (authorization) {
-        var bearer = authorization.split(" ");
-        var jwtToken = bearer[0];
-        if (jwtToken) {
+		var bearer = authorization.split(" ");
+		var jwtToken = bearer[0];
+		if (jwtToken) {
             aad.verify(jwtToken, { audience: audience, tenantId: tenantId }, function (err, result) {
-                if (result) {
-                    return next();
+		        if (result) {
+		            return next();
                 } else {
                     res.status(401).send('That is not a valid token!');
                 }
