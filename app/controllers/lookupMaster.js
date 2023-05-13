@@ -77,7 +77,7 @@ exports.nonindividualAdrProof = (req,res,err) => {
         ${req.method}
     `);
     
-    var query = 'select lookup_ref_id "addressCode", lookup_desc "addressDesc" from lookup_master\
+    var query = 'select lookup_ref_id "addressProofDocCode", lookup_desc "addressProofDocName" from lookup_master\
                  where lookup_id = \'INTRO_DOCUMENT\' AND STATUS != \'DELETED\' AND AUTHORIZED = \'Y\'';
         
     db.sequelize.query(query,{type: sequelize.QueryTypes.SELECT}
@@ -124,6 +124,76 @@ exports.corporates = (req,res,err) => {
             });
         } else {
             return res.status(404).send({
+                "responseCode":resourceNotFoundcode,
+                "response":NoRecords
+            });
+        }
+    }).catch(err => {
+        return res.status(500).send({
+            data:null,
+            message: err.message
+        });
+    });                
+}
+
+exports.title = (req,res,err) => {
+
+    logger.info(`
+        ${new Date()} || 
+        ${req.originalUrl} || 
+        ${JSON.stringify(req.body)} || 
+        ${req.ip} || 
+        ${req.protocol} || 
+        ${req.method}
+    `);
+    
+	var query = 'select lookup_ref_id "titleCode", lookup_desc "titleDesc" from lookup_master\
+    where lookup_id = \'CUSTOMER.TITLE\' AND STATUS != \'DELETED\' AND AUTHORIZED = \'Y\'';
+	
+    db.sequelize.query(query,{type: sequelize.QueryTypes.SELECT}
+    ).then(results=>{
+        if(results.length > 0){
+            return res.status(200).send({
+                "responseCode":sucessCode,
+                "response":results
+            });
+        } else {
+            return res.status(200).send({
+                "responseCode":resourceNotFoundcode,
+                "response":NoRecords
+            });
+        }
+    }).catch(err => {
+        return res.status(500).send({
+            data:null,
+            message: err.message
+        });
+    });                
+}
+
+exports.occupation = (req,res,err) => {
+
+    logger.info(`
+        ${new Date()} || 
+        ${req.originalUrl} || 
+        ${JSON.stringify(req.body)} || 
+        ${req.ip} || 
+        ${req.protocol} || 
+        ${req.method}
+    `);
+    
+	var query = 'select lookup_ref_id "occupationCode", lookup_desc "occupationDesc" from lookup_master\
+    where lookup_id = \'CUSTOMER.PRIMARYOCCUPATION\' AND STATUS != \'DELETED\' AND AUTHORIZED = \'Y\'';
+	
+    db.sequelize.query(query,{type: sequelize.QueryTypes.SELECT}
+    ).then(results=>{
+        if(results.length > 0){
+            return res.status(200).send({
+                "responseCode":sucessCode,
+                "response":results
+            });
+        } else {
+            return res.status(200).send({
                 "responseCode":resourceNotFoundcode,
                 "response":NoRecords
             });
