@@ -18,7 +18,6 @@ exports.panVerification = (req,res) =>{
     } = req.body;
         
     var responseDate = moment(dob).format('DD/MM/YYYY');
-    console.log(responseDate);
         
     logger.info(`
         ${new Date()} || 
@@ -30,15 +29,19 @@ exports.panVerification = (req,res) =>{
     `);
 
         if(number && type == "pan" && name && responseDate){
+			return res.status(200).send({
+                                    "responseCode":2,
+                                    "response":videoIdentification
+                                });
             
-            request.get(panUrl+number+'&name='+name+'&dob='+responseDate, (error, response, body) => {
+            /*request.get(panUrl+number+'&name='+name+'&dob='+responseDate, (error, response, body) => {
                 if(response.body && response.statusCode !== 500){
                     var parsedPan = JSON.parse(response.body);
                     
                     if (parsedPan && parsedPan.responseCode == 0){
                         return res.status(200).send({
                             "responseCode":0,
-                            "response":"Either Pan or DOB incorrect"
+                            "response":"Either PAN or DOB Incorrect"
                         });
                     } else if (parsedPan && parsedPan.responseText == activeDetailsPan){
                         return res.status(200).send({
@@ -57,12 +60,13 @@ exports.panVerification = (req,res) =>{
                         });
                     }
                 } else {
+					console.log("inside main else");
                     return res.status(500).send({
                          data:null,
                         "response":technicalError
                     });
                 } 
-            })
+            })*/
         } else {
             return res.status(200).send({
                 "responseCode":badRequestcode,
