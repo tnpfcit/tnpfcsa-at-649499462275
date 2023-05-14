@@ -9,9 +9,7 @@ const otpGeneration= sequelize.define('otpgeneration', {
     OTP:DataTypes.DECIMAL(16,2),
     CREATED_DATE:{
     type: DataTypes.DATE,
-    allowNull: false,
-   //defaultValue: DataTypes.literal('CREATED_DATE.CURRENT_TIMESTAMP'),
-    
+    allowNull: false
     },
     STATUS:DataTypes.STRING,
     PAN_NUMBER:DataTypes.STRING
@@ -20,11 +18,8 @@ const otpGeneration= sequelize.define('otpgeneration', {
     {
       underscored: true,
       tableName:'API_OTPGENERATION',
-      //timestamps: true,
+
     });
-        //otpGeneration.schema("TNPFC");
         otpGeneration.removeAttribute("id");
-       // otpGeneration.removeAttribute("updated_at");
-       // otpGeneration.removeAttribute("created_at");
         return otpGeneration;
    };
