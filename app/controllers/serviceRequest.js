@@ -122,17 +122,13 @@ exports.serviceRequest = (req, res) => {
 		depositNo = depositNo.map(element => element.depositNo).toString();
 		depositNo = depositNo.replace(/\,/g, "|");		
 	}
-	console.log("deposit_no======"+depositNo);
-	
+	console.log("=============after"+depositNo);
 	
 	//code added to handle address proof url in service request TW-816 - 12/oct/2021 - karthi
 	if (addProofurl instanceof Array) {
         addProofurl = addProofurl.map(element => element.url).toString();
         addProofurl = addProofurl.replace(/\,/g, "|");
     }
-	
-    
-    
     // select customer name and phone number from db
     var query = 'select decode (c.cust_type,\'INDIVIDUAL\',c.fname,c.comp_name) as "depositorName",cp.phone_number "phNumber" from customer c left join cust_phone cp on c.cust_id = cp.cust_id where c.cust_id =:customerId';
     db.sequelize.query(query,{replacements:{customerId: customerId}, type: sequelize.QueryTypes.SELECT}
@@ -280,7 +276,6 @@ exports.serviceRequest = (req, res) => {
 									console.log("inside results");
 									require('../middleware/serviceRequestMessage.js')(depositorName,phNumber,info,ackId);
 									let cnt = results1[0].CNT;
-									console.log("query result"+results1[0].CNT);
 									if (cnt >0) {
 										console.log("inside cnt>0");
 										require('../middleware/servicerequestMessage1.js')(depositorName,phNumber,info,ackId);
@@ -290,8 +285,7 @@ exports.serviceRequest = (req, res) => {
 										});
 									}
 									else {
-										console.log("inside cnt=="+cnt);
-										console.log("inside elese"+results1[0].CNT);
+										console.log("inside cnt=0"+cnt);
 										return res.status(200).send({
 											"responseCode":sucessCode, 
 											"response": results[0],
@@ -426,7 +420,7 @@ exports.serviceRequest = (req, res) => {
                         jointHolderName:jointHolderName,
                         channelId: channelId,
                         agentId:agentId,
-                        jointHolder2Name:jointHolder2Name						
+						jointHolder2Name:jointHolder2Name						
                     },type: sequelize.QueryTypes.SELECT}
                 ).then(results => {
 
