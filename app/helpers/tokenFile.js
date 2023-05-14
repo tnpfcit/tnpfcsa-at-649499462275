@@ -2,7 +2,6 @@ const db = require('../config/db.js');
 const sequelize = require('sequelize');
 const { v4: uuidv4 } = require('uuid');
 var jwt=require('jsonwebtoken');
-var moment = require('moment');
 var ootp = db.otpgeneration;
 var ootps = db.otpgeneration;
 
@@ -120,12 +119,9 @@ module.exports.saveToken = function (token, client, customerId) {
       "client": client.clientId,
       "sucesscode":"200"
     }
-	var currDate = moment(new Date()).format('DD-MM-YYYY HH:mm:ss');
-    //var currDate = new Date();
-    console.log("============current date and time"+currDate);
 
     // save to db.
-    db.sequelize.query("INSERT INTO oauth_tokens (id,access_token,access_token_expires_on,client_id, refresh_token, refresh_token_expires_on, user_id,log_in) VALUES('" + id + "','" + token.accessToken + "','" + dateObjAccessToken.getTime() + "','" + client.clientId + "','" + token.refreshToken + "','" + dateObjRefreshToken.getTime() + "','" + customerId + "','" + currDate + "')").then(() => {
+    db.sequelize.query("INSERT INTO oauth_tokens (id,access_token,access_token_expires_on,client_id, refresh_token, refresh_token_expires_on, user_id) VALUES('" + id + "','" + token.accessToken + "','" + dateObjAccessToken.getTime() + "','" + client.clientId + "','" + token.refreshToken + "','" + dateObjRefreshToken.getTime() + "','" + customerId + "')").then(() => {
       resolve(sendResponse);
     }).catch(err => {
       console.log(err);
@@ -140,10 +136,11 @@ module.exports.getUser = function (username, password) {
   if (isNaN(username)){
     return new Promise((resolve) => {
 		username = username.toUpperCase();
-		console.log("username==========="+ username);
-      db.sequelize.query("select API_generation(:password, :username)as seconds from dual where dummy = 'X'",{replacements: {password: password, username: username}}
+		console.log(username);
+      db.sequelize.query("select API_generation(:password, :username)as seconds from dual",{replacements: {password: password, username: username}}
       ).then(results=>{
           var result = results[0][0].SECONDS;
+		  console.log("otp result===="+result);
               if(result == null) {
                 resolve(false);
               } else if (result > 300) {
@@ -151,9 +148,11 @@ module.exports.getUser = function (username, password) {
               } else {
                   ootp.update({ STATUS:'CLOSED'},{ where: { PAN_NUMBER : username}}
                   ).then(results =>{
-                    var query = 'select c.cust_id from customer c left join cust_phone cp on c.cust_id = cp.cust_id and phone_type_id = \'MOBILE\' where (pan_number =:username or tan_no =:username) AND NOT EXISTS(SELECT * FROM CUSTOMER_SUSPENDED CS WHERE C.CUST_ID = CS.CUST_ID and cs.status=\'SUSPENDED\') AND C.AUTHORIZE_STATUS = \'AUTHORIZED\' AND (CUSTOMER_STATUS !=\'DECEASED\' OR CUSTOMER_STATUS IS NULL)';
+					var query = 'select  c.cust_id from customer c left join cust_phone cp on c.cust_id = cp.cust_id and phone_type_id = \'MOBILE\' where (pan_number =:username or tan_no =:username) AND NOT EXISTS(SELECT * FROM CUSTOMER_SUSPENDED CS WHERE C.CUST_ID = CS.CUST_ID and cs.status=\'SUSPENDED\') AND C.AUTHORIZE_STATUS = \'AUTHORIZED\' AND (CUSTOMER_STATUS !=\'DECEASED\' OR CUSTOMER_STATUS IS NULL)';  
+                    //var query = 'select cust_id from customer where pan_number =:username';
                     db.sequelize.query(query,{replacements:{username:username},type: sequelize.QueryTypes.SELECT}
                     ).then(results=>{
+						console.log("cust_id===="+results[0].CUST_ID);
                         var customerId = results[0].CUST_ID;
                         resolve(customerId);
                     }).catch(err => {
@@ -169,7 +168,7 @@ module.exports.getUser = function (username, password) {
     });
   } else {
     return new Promise((resolve) => {
-      db.sequelize.query('SELECT TRUNC(difference * 24*60*60) as DIFF FROM ( SELECT sysdate - (select max(created_date) from API_OTPGENERATION where phone_number =:username and otp =:password and pan_number is null and cust_id is null)  AS difference FROM DUAL where dummy = \'X\')',
+      db.sequelize.query('SELECT TRUNC(difference * 24*60*60) as DIFF FROM ( SELECT sysdate - (select max(created_date) from API_OTPGENERATION where phone_number =:username and otp =:password and pan_number is null and cust_id is null)  AS difference FROM DUAL)',
         {replacements: {password: password, username: username},type: sequelize.QueryTypes.SELECT}).then(results=>{
           var result = results[0].DIFF;
             if(result == null) {
