@@ -5,8 +5,8 @@ var {sucessCode,NoRecords,resourceNotFoundcode} = require('../config/env');
 
 
 exports.stastics = (req,res) =>{
-    
-    logger.info(`
+	
+	logger.info(`
         ${new Date()} || 
         ${req.originalUrl} || 
         ${JSON.stringify(req.body)} || 
