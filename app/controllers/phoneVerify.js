@@ -5,14 +5,10 @@ const logger = require('../config/logger');
 var ootps = db.otpgeneration;
 
 exports.phoneVerify = (req,res) => {
-
-    var {
-        
+    var {        
         otp,
         phoneNumber
-
     } = req.body;
-
     logger.info(`
         ${new Date()} || 
         ${req.originalUrl} || 
@@ -20,23 +16,18 @@ exports.phoneVerify = (req,res) => {
         ${req.ip} || 
         ${req.protocol}
     `);
-
-
     db.sequelize.query('SELECT TRUNC(difference * 24*60*60) as DIFF FROM ( SELECT sysdate - (select max(created_date) from API_OTPGENERATION where phone_number =:phoneNumber and otp =:otp and pan_number is null and cust_id is null)  AS difference FROM DUAL)',
         {replacements: {
             otp: otp, 
             phoneNumber: phoneNumber
         },type: sequelize.QueryTypes.SELECT}
     ).then(results=>{
-        var result = results[0].DIFF;
-        
-        if(result == null){
-            
+        var result = results[0].DIFF;        
+        if(result == null){            
             return res.status(200).send({
                 "responseCode":404,
                 "response":"Invalid OTP"
             });
-
         } else if (result > 300){
             
             return res.status(200).send({
