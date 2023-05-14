@@ -14,12 +14,8 @@ const Payment= sequelize.define('Payment', {
     {
       underscored: true,
       tableName:'RTGS_NEFT_ACKNOWLEDGEMENT'
-      //timestamps: true,
     });
-        //otpGeneration.schema("TNPFC");
         Payment.removeAttribute("id");
-       // otpGeneration.removeAttribute("updated_at");
-       // otpGeneration.removeAttribute("created_at");
         return Payment;
    };
 
