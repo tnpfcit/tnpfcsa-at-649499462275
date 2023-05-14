@@ -71,7 +71,7 @@ exports.generatePaySlipPdf = (data, callback) => {
                 absolutePosition: { y: 200 }
             },
             {
-                text: moment().format("YYYY-MM-DD HH:mm:ss"),
+                text: moment().format("DD-MM-YYYY HH:mm:ss"),
                 fontSize: 11,
                 absolutePosition: { x: 40, y: 220 }
             },
@@ -155,22 +155,21 @@ exports.generatePaySlipPdf = (data, callback) => {
 	//********
     // Uplod to DMS
     docDir = path.join(appDir, "public", "doc");
-
     var fileName = uuidv4();
     var filePath = path.join(docDir, fileName + '.pdf');
     filePath = filePath.replace("\","/"")
     pdfDoc.pipe(fs.createWriteStream(filePath).on('finish', function() {
-		request.post(
+		request.post(		
         config.dbsUrl,
         { json: { customerId: data.customerId, docType: config.docType, fileName: filePath}},
         function (error, response, body) {
             if (!error && response.statusCode == 200) {
-                // upload data				
-				request.put({
+                // upload data					
+				request.put({					 
                     url: body.docLink,
                     formData: {
                         file: fs.createReadStream(filePath)
-                    }
+                    }					
                 }, function (error, response, body) {
                     if (!error && response.statusCode == 200) {
                         // remove file.
