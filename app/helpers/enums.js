@@ -1,5 +1,3 @@
-// const RolesEnum = Object.freeze({"GM":"ROL01", "CMD":"ROL02"});
-// const RolesEnum1 = Object.freeze({"GM":"ROL01", "CMD":"ROL02"});
 module.exports = {
     RolesEnum : Object.freeze({
         GM: "ROL01", 
