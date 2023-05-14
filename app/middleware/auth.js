@@ -2,7 +2,7 @@ const db = require('../config/db.js');
 var jwt=require('jsonwebtoken');
 const checkAuth = (req, res, next) => {
 var token = req.headers['x-access-token'];
-console.log(token);
+console.log("token===="+token);
 var secret = "FINCURO_API_TNPFC";
 
 if (!token)
