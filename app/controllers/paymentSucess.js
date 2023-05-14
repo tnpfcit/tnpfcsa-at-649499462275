@@ -35,7 +35,9 @@ exports.paySucess = (req, res) => {
                 var firstName = results[0].depositorName.length>16? results[0].depositorName.substring(0,16):results[0].depositorName;
                 var depositorName = results[0].depositorName; 
                 var maturityAmount = results[0].maturityAmount;
+				
                 var depositAmount = results[0].depositAmount;
+				
                 var period = results[0].period;
                 var interestPayment = results[0].interestPayment;
                 if (interestPayment == 0) {
@@ -56,6 +58,10 @@ exports.paySucess = (req, res) => {
                 //var amount2Words = amountWords + ' ' + "Rupees Only";
 				var amount2Words = word.convertNumberToWords(depositAmount) + ' ' + "Rupees Only";
                 var date = moment(new Date()).format(' DD MMM YYYY ');
+				maturityAmount = maturityAmount.toString().replace(/(\d)(?=(\d\d)+\d$)/g, "$1,");
+				console.log(maturityAmount);
+				depositAmount = depositAmount.toString().replace(/(\d)(?=(\d\d)+\d$)/g, "$1,");
+				console.log(depositAmount);
                 // Creating data object for PDF 
                 var pdfData = {
                     depositorName: results[0].depositorName,
@@ -79,7 +85,7 @@ exports.paySucess = (req, res) => {
                     //console.log(uploadedDocUrl);
                     document.update({ PAYMENT_ADVICE_URL:uploadedDocUrl},{where: {TRANSACTION_ID:transactionId}}
                     ).then(results =>{
-                        var msg = urlencode('Dear '+firstName+', You have generated RTGS/NEFT payment advice for new fixed deposit request with transaction ID '+transactionId+'. TNPFCL will issue Fixed Deposit confirmation receipt on realisation of payment as per payment advice generated. -Tamil Nadu Power Finance (TNPF)');
+						var msg = urlencode('Dear '+firstName+', RTGS/NEFT Payment advice for new FD request generated an ID TNPFIDCL '+transactionId+'. FDR will be issued on receipt of the payment-TNPFIDC');
                         //var data = 'username=' + username + '&hash=' + hash + '&sender=' + sender + '&numbers=' + phoneNumber + '&message=' + msg;
 						var data = 'APIKey=6IBUmYiLRk659H5Blt03RQ&senderid=TNPFFD&channel=Trans&DCS=0&flashsms=0&number='+phoneNumber+'&text='+msg+'&route=6';
                         //request("https://api.textlocal.in/send?"+ data, (error, response, body) => {});
@@ -105,7 +111,7 @@ exports.paySucess = (req, res) => {
 		res.status(500).send({ message: err.message }) });
     } else if (transactionId && paymentType == 'NETBANKING') {
         db.sequelize.query('select decode (c.cust_type,\'INDIVIDUAL\',c.fname,c.comp_name) as "depositorName", ACCT_NUM as "depositNumber", cp.PHONE_NUMBER as "phoneNumber", FE_PAY_TYPE as "paymentType", PRODUCT_ID as "productId",CUSTOMER_ID as "customerId",PERIOD as "period",\
-	        INT_PAY_FREQUENCY as "interestPayment",DEPOSIT_AMT as "depositAmount", CATEGORY_ID as "categoryId",RATE_OF_INT as "rateOfInterest" from PG_RTGS_NEFT_TRANS_DETAILS PR join customer c on PR.customer_id = c.cust_id join cust_phone cp on PR.customer_id = cp.cust_id where TRANSACTION_ID = :transactionId',
+	        INT_PAY_FREQUENCY as "interestPayment",DEPOSIT_AMT as "depositAmount", CATEGORY_ID as "categoryId",RATE_OF_INT as "rateOfInterest", RESPONSE_MESSAGE as "pgResponseMessage", response_code as "pgResponseCode" from PG_RTGS_NEFT_TRANS_DETAILS PR join customer c on PR.customer_id = c.cust_id join cust_phone cp on PR.customer_id = cp.cust_id where TRANSACTION_ID = :transactionId',
             { replacements: { transactionId: transactionId }, type: sequelize.QueryTypes.SELECT }
         ).then(results => {
 			logger.info(JSON.stringify(results));
@@ -121,6 +127,8 @@ exports.paySucess = (req, res) => {
                 var interestPayment = results[0].interestPayment;
                 var rateOfInterest = results[0].rateOfInterest;
                 var phoneNumber = results[0].phoneNumber;
+				var pgResponseMessage = results[0].pgResponseMessage;
+				var pgResponseCode = results[0].pgResponseCode;
                 db.sequelize.query('select * from  API_fd_summary where accountnumber =:depositNumber',
                     { replacements: { depositNumber: depositNumber }, type: sequelize.QueryTypes.SELECT }
                 ).then(results => {
@@ -136,18 +144,22 @@ exports.paySucess = (req, res) => {
                         "categoryId": categoryId, "interestPayment": interestPayment, "rateOfInterest": rateOfInterest, "depositNumber": depositNumber, "response": results
 						});
 					} else {
-						 return res.status(404).send({ "responseCode": 404, "response": "Account details not found" });
+						if (pgResponseCode!='0000' && pgResponseMessage !='') {
+							return res.status(200).send({ "responseCode": 404, "response": pgResponseMessage });
+						}else {
+							return res.status(200).send({ "responseCode": 404, "response": "Account details not found" });
+						}
 					}	
                 }).catch(err => { 
 				logger.error("summary details failed===="+err);
 				res.status(500).send({ message: err.message }) });
             } else {
-                return res.status(404).send({ "responseCode": 404, "response": "Account details not found" });
+                return res.status(200).send({ "responseCode": 404, "response": "Transaction Id not found. Contact Customersupport" });
             }
         }).catch(err => { 
 		logger.error("select query failed========="+err);
 		res.status(500).send({ message: err.message }) });
     } else {
-        return res.status(400).send({ "responseCode": 400, "response": "Bad Request"});
+        return res.status(200).send({ "responseCode": 400, "response": "Bad Request"});
     }
 } 
