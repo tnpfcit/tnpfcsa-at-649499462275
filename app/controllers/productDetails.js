@@ -3,8 +3,6 @@ const sequelize = require('sequelize');
 var logger = require('../config/logger');
 var {
    sucessCode,
-   resourceNotFoundcode,
-   badRequestcode
 } = require('../config/env');
 
 exports.productDetails = (req, res, err) => {
@@ -38,4 +36,4 @@ exports.productDetails = (req, res, err) => {
          message: err.message
       });
    });
-}
+}  
