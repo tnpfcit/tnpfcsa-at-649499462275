@@ -81,7 +81,8 @@ exports.custCreation = (req, res) => {
         bankChequeUrl,
 		jointHolder2Name,
 		perCountry,
-		corCountry
+		corCountry,
+		signatureUrl
     } = req.body;
 
     logger.info(`
@@ -93,7 +94,7 @@ exports.custCreation = (req, res) => {
     `);
 	
 	if(depositAmount < 200000){
-		return res.status(500).send({"responseCode":"500","response":"Deposit Amount Should not be less than Rs. 2,00,000"});
+		return res.status(200).send({"responseCode":"500","response":"Deposit Amount Should not be less than Rs. 2,00,000"});
 	}
 
 	var channelId;
@@ -127,6 +128,7 @@ exports.custCreation = (req, res) => {
     jointHolderName = jointHolderName ? jointHolderName : null;
 	jointHolder2Name = jointHolder2Name ? jointHolder2Name : null;
 	bankChequeUrl=bankChequeUrl?bankChequeUrl:null;
+	signatureUrl=signatureUrl?signatureUrl:null;
 	perCountry=perCountry?perCountry:null;
 	corCountry=corCountry?corCountry:null;
 	corState=corState?corState:null;
@@ -142,8 +144,7 @@ exports.custCreation = (req, res) => {
     } else {
         transId = "TNPFCL"+ String(microtime.now());
     }
-    logger.info("transId=========="+ transId);
-    
+    logger.info ("key details: TRANSACTION_ID="+transId);
     if(title) {
         
         var dt = new Date();
@@ -161,7 +162,7 @@ exports.custCreation = (req, res) => {
             :corDistrict,:corCity,:corpinCode,:nomineeName,:nomineeDob,:nomineeRelationship,\
 			:guardianName,:guardianRelationship,:verifiedPAN,:verifiedAADHAAR,:addressProofType,\
             :idProofUrl,:profilePicUrl,:addProofurl,:channelId,:categoryId,:depositType,:jointHolderName,\
-            :bankAcctNumber,:bankName,:bankAcctHolderName,:bankIfscCode,:bankChequeUrl,:transId,:agentId,:jointHolder2Name, :perCountry,:corCountry) AS "customerId" from dual',
+            :bankAcctNumber,:bankName,:bankAcctHolderName,:bankIfscCode,:bankChequeUrl,:transId,:agentId,:jointHolder2Name, :perCountry,:corCountry,:signatureUrl) AS "customerId" from dual',
             {replacements:{
                 title: title, 
                 fName: fName, 
@@ -208,7 +209,8 @@ exports.custCreation = (req, res) => {
                 agentId: agentId,
 				jointHolder2Name:jointHolder2Name,
 				perCountry:perCountry,
-				corCountry:corCountry
+				corCountry:corCountry,
+				signatureUrl:signatureUrl
             }, type: sequelize.QueryTypes.SELECT}
         ).then(results =>{
 			
